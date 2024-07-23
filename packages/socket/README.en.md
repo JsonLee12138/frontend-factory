@@ -48,3 +48,24 @@ constructor(
 
 - **getState()**
   - Gets the current WebSocket connection state.
+
+### Example
+```typescript
+import { SocketReadyState, Socket } from 'jsonlee-ws';
+
+// Define options for the socket
+const options = {
+  showLog: true,
+  reconnectInterval: 2000,
+  heartbeatInterval: 5000,
+  heartbeatMessage: "ping",
+  maxReconnectAttempts: 5,
+  onClose: (e: any) => console.log('WebSocket closed:', e),
+  onError: (e: any) => console.error('WebSocket error:', e),
+  onMessage: (msg: any) => console.log('WebSocket message:', msg),
+  onOpen: (e: any) => console.log('WebSocket opened:', e),
+  protocols: ['protocol1', 'protocol2']
+};
+
+const socket = new Socket('ws://localhost:8080', options);
+```
