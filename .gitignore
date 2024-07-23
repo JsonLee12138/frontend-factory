@@ -1,0 +1,14 @@
+# dependencies
+node_modules/
+
+# out
+output/
+dist/
+
+# .locks
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+.idea
+.vscode
