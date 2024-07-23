@@ -1,5 +1,5 @@
 ## JSON WebSocket
-[中文文档](#介绍)
+[中文文档](https://github.com/JsonLee12138/frontend-factory/tree/main/packages/socket/README.md)
 
 ### Introduction
 JSON WebSocket is a `Socket` class for managing WebSocket connections, with various `WebSocket` wrappers for reconnection, heartbeat messages and event handling options.

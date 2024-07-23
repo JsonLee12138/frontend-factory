@@ -1,5 +1,5 @@
 ## JSON WebSocket
-[English Documents](#English-Version)
+[English Documents](https://github.com/JsonLee12138/frontend-factory/tree/main/packages/socket/README.en.md)
 
 ### 介绍
 JSON WebSocket是一个 `Socket` 类，用于管理 WebSocket 连接，具有各种重连、心跳消息和事件处理选项的 `WebSocket` 包装器。
