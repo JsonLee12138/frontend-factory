@@ -1,7 +1,7 @@
 import { SocketReadyState } from "./enums";
 import { SocketOptions } from "./types";
 
-class Socket<T = any> {
+export class Socket<T = any> {
   static ReadyState: SocketReadyState;
   private showLog?: boolean;
   private reconectTimes: number = 0;
@@ -222,5 +222,3 @@ class Socket<T = any> {
     return this.instance?.readyState;
   };
 }
-
-export default Socket;

@@ -2,7 +2,7 @@
 [English Documents](https://github.com/JsonLee12138/frontend-factory/tree/main/packages/socket/README.en.md)
 
 ### 介绍
-JSON WebSocket是一个 `Socket` 类，用于管理 WebSocket 连接，具有各种重连、心跳消息和事件处理选项的 `WebSocket` 包装器。
+JSON WebSocket是一个 `Socket` 类，用于管理 WebSocket 连接，具有各种重连、心跳消息和事件处理选项的 `WebSocket` 包装器, 具有良好的代码提示。
 
 ### 类: `Socket<T = any>`
 该类提供了一个增强功能的 WebSocket 包装器，包括自动重连和心跳消息。
