@@ -1,0 +1,9 @@
+{
+  "packages": [
+    "apps/*",
+    "packages/*"
+  ],
+  "version": "8.1.7",
+  "npmClient": "pnpm",
+  "useWorkspaces": true
+}
