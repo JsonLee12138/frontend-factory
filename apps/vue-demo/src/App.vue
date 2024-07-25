@@ -1,15 +1,35 @@
 <script setup lang="ts">
 import HelloWorld from './components/HelloWorld.vue'
-import { request } from 'jsonlee-fetch/src/request';
+import JFetch, { get, request } from 'jsonlee-fetch/src/request';
 const testUrl = "https://jsonplaceholder.typicode.com/todos/1";
 
-async function test() {
-  const controller = request(testUrl, {});
-  console.log(controller);
-
-  const res = await controller;
-  controller.abort();
+const req = new JFetch({
+  baseURL: "https://jsonplaceholder.typicode.com",
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+req.responseInterceptor.use((res)=> {
+  console.log(res, 'interceptor');
+  return {a: res}
+})
+// req.requestInterceptor.use((config)=> {
+//   config.url = 'todos/2'
+//   return config;
+// })
+const controller = req.get('/todos/1');
+// const controller = JFetch.request(testUrl)
+// const controller = JFetch.get(testUrl)
+console.log(controller);
+controller.then(res=> {
   console.log(res);
+
+})
+async function test() {
+
+  // const res = await controller;
+  // controller.abort();
+  // console.log(res);
 }
 test();
 </script>

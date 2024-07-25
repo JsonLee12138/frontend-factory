@@ -222,3 +222,5 @@ export class Socket<T = any> {
     return this.instance?.readyState;
   };
 }
+
+export default Socket;

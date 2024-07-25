@@ -1,13 +1,15 @@
 import qs from "qs";
 import { ContentType, Method, StatusCode } from "./enums";
 import { JFetchAbortablePromise, JFetchError, JFetchOptions } from "./types";
+import InterceptorManager from "./interceptor";
 
 const baseHeaders = {
   'Content-Type': ContentType.JSON,
 }
 
 const withBodyArr = [Method.POST, Method.PUT, Method.PATCH];
-const withoutBodyArr = [Method.GET, Method.HEAD, Method.OPTIONS];
+const withoutBodyArr = [Method.GET, Method.HEAD, Method.OPTIONS, Method.DELETE];
+const withParamsArr = [Method.GET, Method.HEAD, Method.OPTIONS];
 
 class AbortablePromise<T> extends Promise<T> implements JFetchAbortablePromise<T> {
   private abortController: AbortController;
@@ -22,11 +24,68 @@ class AbortablePromise<T> extends Promise<T> implements JFetchAbortablePromise<T
     this.abortController = abortController;
     this.abort = this.abort.bind(this);
   }
-  public abort(){
+  /**
+   * Aborts the fetch request.
+   * 中止 fetch 请求。
+   */
+  public abort() {
     this.abortController.abort();
   };
 }
-export function request<T = any, P = any>(url: string, { headers: _headers, timeout = 3000, isStream = false, streamCallback = () => { }, method = Method.GET, params, data, ...options }: JFetchOptions): JFetchAbortablePromise<T> {
+/**
+ * Configuration options for JFetch requests.
+ * JFetch 请求的配置选项。
+ *
+ * @param url The URL of the request.
+ * @param url 请求地址
+ *
+ * @param {JFetchOptions} [options]
+ * @extends [RequestInit](https://developer.mozilla.org/en-US/docs/Web/API/RequestInit)
+ *
+ * @property {Record<string, any>} [params] - Query parameters to include in the request URL.
+ * @property {Record<string, any>} [params] - 请求 URL 中包含的查询参数。
+ *
+ * @property {Record<string, any> | null | string} [data] - request parameter.
+ * @property {Record<string, any> | null | string} [data] - 请求参数。
+ *
+ * @property {number} [timeout] - Timeout duration in milliseconds for the request.
+ * @property {number} [timeout] - 请求的超时时间（毫秒）。
+ *
+ * @property {boolean} [isStream] - Whether the response should be treated as a stream.
+ * @property {boolean} [isStream] - 响应是否应视为流。
+ *
+ * @property {<T>(chunk: T) => void} [streamCallback] - Callback function for handling stream chunks.
+ * @property {<T>(chunk: T) => void} [streamCallback] - 处理流块的回调函数。
+ *
+ * @property {string} [baseURL] - Base URL for the request.
+ * @property {string} [baseURL] - 请求的基础 URL。
+ *
+ * @property {ResponseInterceptor} [responseInterceptor] - Interceptor for processing the response.
+ * @property {ResponseInterceptor} [responseInterceptor] - 处理响应的拦截器。
+ *
+ * @property {RequestInterceptor} [requestInterceptor] - Interceptor for processing the request.
+ * @property {RequestInterceptor} [requestInterceptor] - 处理请求的拦截器。
+ *
+ * Error object
+ * 错误对象。
+ * @interface JFetchError
+ *
+ * @property {number} code - The error code.
+ * @property {number} code - 错误码。
+ *
+ * @property {string} message - The error message.
+ * @property {string} message - 错误信息。
+ *
+ * @property {string} url - The request URL.
+ * @property {string} url - 请求 URL。
+ *
+ * @property {Headers} requestHeaders - The request headers.
+ * @property {Headers} requestHeaders - 请求头。
+ *
+ * @property {Headers} responseHeaders - The response headers.
+ * @property {Headers} responseHeaders - 响应头。
+ */
+export function request<T = any>(url: string, { headers: _headers, timeout = 3000, isStream = false, streamCallback = () => { }, method = Method.GET, params, data, responseInterceptor, requestInterceptor, mode = 'cors', ...options }: Omit<JFetchOptions, 'baseURL'> = {}): JFetchAbortablePromise<T> {
   const headers = mergeHeaders(baseHeaders, _headers);
   const controller = new AbortController();
   const signal = controller.signal;
@@ -49,37 +108,39 @@ export function request<T = any, P = any>(url: string, { headers: _headers, time
       }, _time);
     });
   }
-  if(data){
-    if (withBodyArr.includes(method.toUpperCase() as Method)) {
-      const _contentType = headers.get('Content-Type') || '';
-      if (_contentType.includes(ContentType.JSON)) {
-        data = JSON.stringify(data);
-      } else if (_contentType.includes(ContentType.FORM_URLENCODED)) {
-        data = qs.stringify(data, { arrayFormat: 'repeat' });
-      } else if (_contentType.includes(ContentType.FORM_DATA)) {
-        const formData = new FormData();
-        if (!(data instanceof FormData) && typeof data === 'object') {
-          const _data = data as Record<string, any>;
-          Object.keys(_data).forEach((key) => {
-            if(_data.hasOwnProperty(key)){
-              formData.append(key, _data[key]);
-            }
-          });
-          data = formData;
+  return new AbortablePromise<T>(async (resolve, reject) => {
+    if (requestInterceptor) {
+      const { headers: _h, data: _d, params: _p, method: _m, url: _u, ..._op } = await requestInterceptor.run({ ...options, headers, data, params, method, url })
+      data = _d;
+      url = _u;
+      params = _p;
+      options = _op;
+    }
+    if (data) {
+      if (withBodyArr.includes(method.toUpperCase() as Method)) {
+        const _contentType = headers.get('Content-Type') || '';
+        if (_contentType.includes(ContentType.JSON)) {
+          data = JSON.stringify(data);
+        } else if (_contentType.includes(ContentType.FORM_URLENCODED)) {
+          data = qs.stringify(data, { arrayFormat: 'repeat' });
+        } else if (_contentType.includes(ContentType.FORM_DATA)) {
+          const formData = new FormData();
+          if (!(data instanceof FormData) && typeof data === 'object') {
+            const _data = data as Record<string, any>;
+            Object.keys(_data).forEach((key) => {
+              if (_data.hasOwnProperty(key)) {
+                formData.append(key, _data[key]);
+              }
+            });
+            data = formData;
+          }
         }
       }
+      if (withoutBodyArr.includes(method.toUpperCase() as Method)) {
+        data = null;
+      }
     }
-    if (withoutBodyArr.includes(method.toUpperCase() as Method)) {
-      data = null;
-    }
-  }
-  if(params){
-    const paramsStr = qs.stringify(params, { arrayFormat: 'repeat' });
-    if(paramsStr){
-      url = url.includes('?') ? `${url}&${paramsStr}` : `${url}?${paramsStr}`;
-    }
-  }
-  return new AbortablePromise<T>(async (resolve, reject) => {
+    url = buildUrl(url);
     try {
       const res = await Promise.race([
         fetch(url, {
@@ -96,7 +157,10 @@ export function request<T = any, P = any>(url: string, { headers: _headers, time
         if (res.headers.get('Content-Type')?.includes(ContentType.STREAM) || res.headers.get('Transfer-Encoding') === 'chunked' || isStream) {
           resolve(handleStream(res, streamCallback) as T);
         }
-        resolve(dataToJson(res));
+        if (responseInterceptor) {
+          return resolve(await responseInterceptor.run(await dataToJson(res)));
+        }
+        resolve(await dataToJson(res));
       }
       return reject(genError({
         code: res.status,
@@ -132,14 +196,440 @@ export function request<T = any, P = any>(url: string, { headers: _headers, time
         responseHeaders: new Headers(),
         url,
       }));
-    } finally{
-      if(timeoutInstance){
+    } finally {
+      if (timeoutInstance) {
         clearTimeout(timeoutInstance);
       }
     }
-}, controller)
+  }, controller)
 }
-
+/**
+ * Sends an HTTP GET request.
+ * 发送 HTTP GET 请求。
+ *
+ * @template T - The type of the response data.
+ * @template T - 响应数据的类型。
+ *
+ * @template P - The type of the request parameter.
+ * @template P - 请求参数的类型。
+ *
+ * @param {string} url - The URL to which the request is sent.
+ * @param {string} url - 发送请求的 URL。
+ *
+ * @param {P} [params] - The query parameters to include in the request.
+ * @param {P} [params] - 请求中包含的查询参数。
+ *
+ * @param {Omit<JFetchOptions, 'baseURL' | 'data' | 'params'>} [options]
+ * @extends [RequestInit](https://developer.mozilla.org/en-US/docs/Web/API/RequestInit)
+ *
+ * @property {number} [timeout] - Timeout duration in milliseconds for the request.
+ * @property {number} [timeout] - 请求的超时时间（毫秒）。
+ *
+ * @property {boolean} [isStream] - Whether the response should be treated as a stream.
+ * @property {boolean} [isStream] - 响应是否应视为流。
+ *
+ * @property {function} [streamCallback] - Callback function for handling stream chunks.
+ * @property {<T>(chunk: T) => void} [streamCallback] - 处理流块的回调函数。
+ *
+ * @property {ResponseInterceptor} [responseInterceptor] - Interceptor for processing the response.
+ * @property {ResponseInterceptor} [responseInterceptor] - 处理响应的拦截器。
+ *
+ * @property {RequestInterceptor} [requestInterceptor] - Interceptor for processing the request.
+ * @property {RequestInterceptor} [requestInterceptor] - 处理请求的拦截器。
+ *
+ * Error object
+ * 错误对象。
+ * @interface JFetchError
+ *
+ * @property {number} code - The error code.
+ * @property {number} code - 错误码。
+ *
+ * @property {string} message - The error message.
+ * @property {string} message - 错误信息。
+ *
+ * @property {string} url - The request URL.
+ * @property {string} url - 请求 URL。
+ *
+ * @property {Headers} requestHeaders - The request headers.
+ * @property {Headers} requestHeaders - 请求头。
+ *
+ * @property {Headers} responseHeaders - The response headers.
+ * @property {Headers} responseHeaders - 响应头。
+ */
+export function get<T = any, P = any>(url: string, params: P = {} as P, options: Omit<JFetchOptions, 'baseURL' | 'params' | 'data'> = {}): JFetchAbortablePromise<T> {
+  return request<T>(url, {
+    ...options,
+    params: params as unknown as JFetchOptions['params'],
+    method: Method.GET,
+  })
+}
+/**
+ * Sends an HTTP POST request.
+ * 发送 HTTP POST 请求。
+ *
+ * @template T - The type of the response data.
+ * @template T - 响应数据的类型。
+ *
+ * @template D - The type of the request parameter.
+ * @template D - 请求参数的类型。
+ *
+ * @param {string} url - The URL to which the request is sent.
+ * @param {string} url - 发送请求的 URL。
+ *
+ * @param {D} [data] - request parameter.
+ * @param {D} [data] - 请求参数。
+ *
+ * @param {Omit<JFetchOptions, 'baseURL' | 'data'>} [options]
+ * @extends [RequestInit](https://developer.mozilla.org/en-US/docs/Web/API/RequestInit)
+ *
+ * @property {number} [timeout] - Timeout duration in milliseconds for the request.
+ * @property {number} [timeout] - 请求的超时时间（毫秒）。
+ *
+ * @param {Record<string, any>} [params] - The query parameters contained in the request.
+ *
+ * @param {Record<string, any>} [params] - 请求中包含的查询参数。
+ *
+ * @property {boolean} [isStream] - Whether the response should be treated as a stream.
+ * @property {boolean} [isStream] - 响应是否应视为流。
+ *
+ * @property {<T>(chunk: T) => void} [streamCallback] - Callback function for handling stream chunks.
+ * @property {<T>(chunk: T) => void} [streamCallback] - 处理流块的回调函数。
+ *
+ * @property {ResponseInterceptor} [responseInterceptor] - Interceptor for processing the response.
+ * @property {ResponseInterceptor} [responseInterceptor] - 处理响应的拦截器。
+ *
+ * @property {RequestInterceptor} [requestInterceptor] - Interceptor for processing the request.
+ * @property {RequestInterceptor} [requestInterceptor] - 处理请求的拦截器。
+ *
+ * Error object
+ * 错误对象。
+ * @interface JFetchError
+ *
+ * @property {number} code - The error code.
+ * @property {number} code - 错误码。
+ *
+ * @property {string} message - The error message.
+ * @property {string} message - 错误信息。
+ *
+ * @property {string} url - The request URL.
+ * @property {string} url - 请求 URL。
+ *
+ * @property {Headers} requestHeaders - The request headers.
+ * @property {Headers} requestHeaders - 请求头。
+ *
+ * @property {Headers} responseHeaders - The response headers.
+ * @property {Headers} responseHeaders - 响应头。
+ */
+export function post<T = any, D = any>(url: string, data: D = {} as D, options: Omit<JFetchOptions, 'baseURL' | 'data'> = {}): JFetchAbortablePromise<T> {
+  return request<T>(url, {
+    ...options,
+    data: data as unknown as JFetchOptions['data'],
+    method: Method.POST,
+  })
+}
+/**
+ * Sends an HTTP PUT request.
+ * 发送 HTTP PUT 请求。
+ *
+ * @template T - The type of the response data.
+ * @template T - 响应数据的类型。
+ *
+ * @template D - The type of the request parameter.
+ * @template D - 请求参数的类型。
+ *
+ * @param {string} url - The URL to which the request is sent.
+ * @param {string} url - 发送请求的 URL。
+ *
+ * @param {D} [data] - request parameter.
+ * @param {D} [data] - 请求参数。
+ *
+ * @param {Omit<JFetchOptions, 'baseURL' | 'data'>} [options]
+ * @extends [RequestInit](https://developer.mozilla.org/en-US/docs/Web/API/RequestInit)
+ *
+ * @property {number} [timeout] - Timeout duration in milliseconds for the request.
+ * @property {number} [timeout] - 请求的超时时间（毫秒）。
+ *
+ * @param {Record<string, any>} [params] - The query parameters contained in the request.
+ * @param {Record<string, any>} [params] - 请求中包含的查询参数。
+ *
+ * @property {boolean} [isStream] - Whether the response should be treated as a stream.
+ * @property {boolean} [isStream] - 响应是否应视为流。
+ *
+ * @property {<T>(chunk: T) => void} [streamCallback] - Callback function for handling stream chunks.
+ * @property {<T>(chunk: T) => void} [streamCallback] - 处理流块的回调函数。
+ *
+ * @property {ResponseInterceptor} [responseInterceptor] - Interceptor for processing the response.
+ * @property {ResponseInterceptor} [responseInterceptor] - 处理响应的拦截器。
+ *
+ * @property {RequestInterceptor} [requestInterceptor] - Interceptor for processing the request.
+ * @property {RequestInterceptor} [requestInterceptor] - 处理请求的拦截器。
+ *
+ * Error object
+ * 错误对象。
+ * @interface JFetchError
+ *
+ * @property {number} code - The error code.
+ * @property {number} code - 错误码。
+ *
+ * @property {string} message - The error message.
+ * @property {string} message - 错误信息。
+ *
+ * @property {string} url - The request URL.
+ * @property {string} url - 请求 URL。
+ *
+ * @property {Headers} requestHeaders - The request headers.
+ * @property {Headers} requestHeaders - 请求头。
+ *
+ * @property {Headers} responseHeaders - The response headers.
+ * @property {Headers} responseHeaders - 响应头。
+ */
+export function put<T = any, D = any>(url: string, data: D = {} as D, options: Omit<JFetchOptions, 'baseURL' | 'data'> = {}): JFetchAbortablePromise<T> {
+  return request<T>(url, {
+    ...options,
+    data: data as unknown as JFetchOptions['data'],
+    method: Method.PUT,
+  })
+}
+/**
+ * Sends an HTTP DELETE request.
+ * 发送 HTTP DELETE 请求。
+ *
+ * @template T - The type of the response data.
+ * @template T - 响应数据的类型。
+ *
+ * @param {string} url - The URL to which the request is sent.
+ * @param {string} url - 发送请求的 URL。
+ *
+ * @param {Omit<JFetchOptions, 'baseURL' | 'data'>} [options]
+ * @extends [RequestInit](https://developer.mozilla.org/en-US/docs/Web/API/RequestInit)
+ *
+ * @property {number} [timeout] - Timeout duration in milliseconds for the request.
+ * @property {number} [timeout] - 请求的超时时间（毫秒）。
+ *
+ * @property {boolean} [isStream] - Whether the response should be treated as a stream.
+ * @property {boolean} [isStream] - 响应是否应视为流。
+ *
+ * @param {Record<string, any>} [params] - The query parameters contained in the request.
+ *
+ * @param {Record<string, any>} [params] - 请求中包含的查询参数。
+ *
+ * @property {<T>(chunk: T) => void} [streamCallback] - Callback function for handling stream chunks.
+ * @property {<T>(chunk: T) => void} [streamCallback] - 处理流块的回调函数。
+ *
+ * @property {ResponseInterceptor} [responseInterceptor] - Interceptor for processing the response.
+ * @property {ResponseInterceptor} [responseInterceptor] - 处理响应的拦截器。
+ *
+ * @property {RequestInterceptor} [requestInterceptor] - Interceptor for processing the request.
+ * @property {RequestInterceptor} [requestInterceptor] - 处理请求的拦截器。
+ *
+ * Error object
+ * 错误对象。
+ * @interface JFetchError
+ *
+ * @property {number} code - The error code.
+ * @property {number} code - 错误码。
+ *
+ * @property {string} message - The error message.
+ * @property {string} message - 错误信息。
+ *
+ * @property {string} url - The request URL.
+ * @property {string} url - 请求 URL。
+ *
+ * @property {Headers} requestHeaders - The request headers.
+ * @property {Headers} requestHeaders - 请求头。
+ *
+ * @property {Headers} responseHeaders - The response headers.
+ * @property {Headers} responseHeaders - 响应头。
+ */
+export function del<T = any>(url: string, options: Omit<JFetchOptions, 'baseURL' | 'data'> = {}): JFetchAbortablePromise<T> {
+  return request<T>(url, {
+    ...options,
+    method: Method.DELETE,
+  })
+}
+/**
+ * Sends an HTTP PATCH request.
+ * 发送 HTTP PATCH 请求。
+ *
+ * @template T - The type of the response data.
+ * @template T - 响应数据的类型。
+ *
+ * @template D - The type of the request parameter.
+ * @template D - 请求参数的类型。
+ *
+ * @param {string} url - The URL to which the request is sent.
+ * @param {string} url - 发送请求的 URL。
+ *
+ * @param {D} [data] - request parameter.
+ * @param {D} [data] - 请求参数。
+ *
+ * @param {Omit<JFetchOptions, 'baseURL' | 'data'>} [options]
+ * @extends [RequestInit](https://developer.mozilla.org/en-US/docs/Web/API/RequestInit)
+ *
+ * @property {number} [timeout] - Timeout duration in milliseconds for the request.
+ * @property {number} [timeout] - 请求的超时时间（毫秒）。
+ *
+ * @param {Record<string, any>} [params] - The query parameters contained in the request.
+ * @param {Record<string, any>} [params] - 请求中包含的查询参数。
+ *
+ * @property {boolean} [isStream] - Whether the response should be treated as a stream.
+ * @property {boolean} [isStream] - 响应是否应视为流。
+ *
+ * @property {<T>(chunk: T) => void} [streamCallback] - Callback function for handling stream chunks.
+ * @property {<T>(chunk: T) => void} [streamCallback] - 处理流块的回调函数。
+ *
+ * @property {ResponseInterceptor} [responseInterceptor] - Interceptor for processing the response.
+ * @property {ResponseInterceptor} [responseInterceptor] - 处理响应的拦截器。
+ *
+ * @property {RequestInterceptor} [requestInterceptor] - Interceptor for processing the request.
+ * @property {RequestInterceptor} [requestInterceptor] - 处理请求的拦截器。
+ *
+ * Error object
+ * 错误对象。
+ * @interface JFetchError
+ *
+ * @property {number} code - The error code.
+ * @property {number} code - 错误码。
+ *
+ * @property {string} message - The error message.
+ * @property {string} message - 错误信息。
+ *
+ * @property {string} url - The request URL.
+ * @property {string} url - 请求 URL。
+ *
+ * @property {Headers} requestHeaders - The request headers.
+ * @property {Headers} requestHeaders - 请求头。
+ *
+ * @property {Headers} responseHeaders - The response headers.
+ * @property {Headers} responseHeaders - 响应头。
+ */
+export function patch<T = any, D = any>(url: string, data: D = {} as D, options: Omit<JFetchOptions, 'baseURL' | 'data'> = {}): JFetchAbortablePromise<T> {
+  return request<T>(url, {
+    ...options,
+    data: data as unknown as JFetchOptions['data'],
+    method: Method.PATCH,
+  })
+}
+/**
+ * Sends an HTTP HEAD request.
+ * 发送 HTTP HEAD 请求。
+ *
+ * @template T - The type of the response data.
+ * @template T - 响应数据的类型。
+ *
+ * @template P - The type of the request parameter.
+ * @template P - 请求参数的类型。
+ *
+ * @param {string} url - The URL to which the request is sent.
+ * @param {string} url - 发送请求的 URL。
+ *
+ * @param {P} [params] - The query parameters to include in the request.
+ * @param {P} [params] - 请求中包含的查询参数。
+ *
+ * @param {Omit<JFetchOptions, 'baseURL' | 'data'>} [options]
+ * @extends [RequestInit](https://developer.mozilla.org/en-US/docs/Web/API/RequestInit)
+ *
+ * @property {number} [timeout] - Timeout duration in milliseconds for the request.
+ * @property {number} [timeout] - 请求的超时时间（毫秒）。
+ *
+ * @property {boolean} [isStream] - Whether the response should be treated as a stream.
+ * @property {boolean} [isStream] - 响应是否应视为流。
+ *
+ * @property {<T>(chunk: T) => void} [streamCallback] - Callback function for handling stream chunks.
+ * @property {<T>(chunk: T) => void} [streamCallback] - 处理流块的回调函数。
+ *
+ * @property {ResponseInterceptor} [responseInterceptor] - Interceptor for processing the response.
+ * @property {ResponseInterceptor} [responseInterceptor] - 处理响应的拦截器。
+ *
+ * @property {RequestInterceptor} [requestInterceptor] - Interceptor for processing the request.
+ * @property {RequestInterceptor} [requestInterceptor] - 处理请求的拦截器。
+ *
+ * Error object
+ * 错误对象。
+ * @interface JFetchError
+ *
+ * @property {number} code - The error code.
+ * @property {number} code - 错误码。
+ *
+ * @property {string} message - The error message.
+ * @property {string} message - 错误信息。
+ *
+ * @property {string} url - The request URL.
+ * @property {string} url - 请求 URL。
+ *
+ * @property {Headers} requestHeaders - The request headers.
+ * @property {Headers} requestHeaders - 请求头。
+ *
+ * @property {Headers} responseHeaders - The response headers.
+ * @property {Headers} responseHeaders - 响应头。
+ */
+export function head<T = any, P = any>(url: string, params: P = {} as P, options: Omit<JFetchOptions, 'baseURL' | 'params' | 'data'> = {}): JFetchAbortablePromise<T> {
+  return request<T>(url, {
+    ...options,
+    params: params as unknown as JFetchOptions['params'],
+    method: Method.HEAD,
+  })
+}
+/**
+ * Sends an HTTP OPTIONS request.
+ * 发送 HTTP OPTIONS 请求。
+ *
+ * @template T - The type of the response data.
+ * @template T - 响应数据的类型。
+ *
+ * @template P - The type of the request parameter.
+ * @template P - 请求参数的类型。
+ *
+ * @param {string} url - The URL to which the request is sent.
+ * @param {string} url - 发送请求的 URL。
+ *
+ * @param {P} [params] - The query parameters to include in the request.
+ * @param {P} [params] - 请求中包含的查询参数。
+ *
+ * @param {Omit<JFetchOptions, 'baseURL' | 'data'>} [options]
+ * @extends [RequestInit](https://developer.mozilla.org/en-US/docs/Web/API/RequestInit)
+ *
+ * @property {number} [timeout] - Timeout duration in milliseconds for the request.
+ * @property {number} [timeout] - 请求的超时时间（毫秒）。
+ *
+ * @property {boolean} [isStream] - Whether the response should be treated as a stream.
+ * @property {boolean} [isStream] - 响应是否应视为流。
+ *
+ * @property {<T>(chunk: T) => void} [streamCallback] - Callback function for handling stream chunks.
+ * @property {<T>(chunk: T) => void} [streamCallback] - 处理流块的回调函数。
+ *
+ * @property {ResponseInterceptor} [responseInterceptor] - Interceptor for processing the response.
+ * @property {ResponseInterceptor} [responseInterceptor] - 处理响应的拦截器。
+ *
+ * @property {RequestInterceptor} [requestInterceptor] - Interceptor for processing the request.
+ * @property {RequestInterceptor} [requestInterceptor] - 处理请求的拦截器。
+ *
+ * Error object
+ * 错误对象。
+ * @interface JFetchError
+ *
+ * @property {number} code - The error code.
+ * @property {number} code - 错误码。
+ *
+ * @property {string} message - The error message.
+ * @property {string} message - 错误信息。
+ *
+ * @property {string} url - The request URL.
+ * @property {string} url - 请求 URL。
+ *
+ * @property {Headers} requestHeaders - The request headers.
+ * @property {Headers} requestHeaders - 请求头。
+ *
+ * @property {Headers} responseHeaders - The response headers.
+ * @property {Headers} responseHeaders - 响应头。
+ */
+export function options<T = any, P = any>(url: string, params: P = {} as P, options: Omit<JFetchOptions, 'baseURL' | 'params' | 'data'> = {}): JFetchAbortablePromise<T> {
+  return request<T>(url, {
+    ...options,
+    params: params as unknown as JFetchOptions['params'],
+    method: Method.OPTIONS,
+  })
+}
 async function handleStream(res: Response, callback: <T = any>(chunk: T | string) => void) {
   if (!res.body) {
     return Promise.reject(genError({
@@ -168,8 +658,28 @@ async function handleStream(res: Response, callback: <T = any>(chunk: T | string
     }
   }
 }
-function dataToJson(res: Response) {
-  return res.json();
+function buildUrl(url: string, params?: JFetchOptions['params']): string {
+  if (params) {
+    const paramsStr = qs.stringify(params, { arrayFormat: 'repeat' });
+    if (paramsStr) {
+      url = url.includes('?') ? `${url}&${paramsStr}` : `${url}?${paramsStr}`;
+    }
+  }
+  return url;
+}
+async function dataToJson(res: Response) {
+  try {
+    return await res.json();
+  } catch (error: unknown) {
+    const _error = error as Error;
+    return Promise.reject(genError({
+      code: StatusCode.BODY_NULL,
+      message: `Failed to parse JSON: ${_error.message || 'Unknown error'}`,
+      requestHeaders: new Headers(),
+      responseHeaders: res.headers,
+      url: res.url,
+    }))
+  }
 }
 function mergeHeaders(_baseHeaders: HeadersInit = {}, _newHeaders: HeadersInit = {}): Headers {
   return new Headers({ ..._baseHeaders, ..._newHeaders })
@@ -184,3 +694,573 @@ function genError({ code, message, requestHeaders, responseHeaders, url }: JFetc
     url,
   }
 }
+
+/**
+ * JFetch class for making HTTP requests with a predefined configuration.
+ * 用于使用预定义配置进行 HTTP 请求的 JFetch 类。
+ */
+class JFetch {
+  private baseURL: string;
+  private headers: HeadersInit;
+  private config: Omit<JFetchOptions, 'baseURL' | 'headers'>;
+  private requestQueue: Array<JFetchAbortablePromise<any>> = [];
+  /**
+   * Constructs an instance of JFetch.
+   * 构造 JFetch 的实例。
+   *
+   * @param {Omit<JFetchOptions, 'params' | 'data' | 'isStream' | 'streamCallback' | 'responseInterceptor' | 'requestInterceptor'>} [options]
+   * @extends [RequestInit](https://developer.mozilla.org/en-US/docs/Web/API/RequestInit)
+   *
+   * @property {number} [timeout] - Timeout duration in milliseconds for the request.
+   * @property {number} [timeout] - 请求的超时时间（毫秒）。
+   *
+   * @property {string} [baseURL] - Base URL for the request.
+   * @property {string} [baseURL] - 请求的基础 URL。
+   */
+  constructor({ baseURL = '', headers = {}, ...options }: Omit<JFetchOptions, 'params' | 'data' | 'isStream' | 'streamCallback' | 'responseInterceptor' | 'requestInterceptor'> = {}) {
+    this.baseURL = baseURL;
+    this.headers = headers;
+    this.config = options;
+    // bind
+    this.request = this.request.bind(this);
+    this.get = this.get.bind(this);
+    this.post = this.post.bind(this);
+    this.put = this.put.bind(this);
+    this.delete = this.delete.bind(this);
+    this.patch = this.patch.bind(this);
+    this.head = this.head.bind(this);
+    this.options = this.options.bind(this);
+    this.abortAll = this.abortAll.bind(this);
+  }
+  static request = request;
+  static get = get;
+  static post = post;
+  static put = put;
+  static patch = patch;
+  static delete = del;
+  static head = head;
+  static options = options;
+
+  /**
+   * Configuration options for JFetch requests.
+   * JFetch 请求的配置选项。
+   *
+   * @param url The URL of the request.
+   * @param url 请求地址
+   *
+   * @param {JFetchOptions} [options]
+   * @extends [RequestInit](https://developer.mozilla.org/en-US/docs/Web/API/RequestInit)
+   *
+   * @property {Record<string, any>} [params] - Query parameters to include in the request URL.
+   * @property {Record<string, any>} [params] - 请求 URL 中包含的查询参数。
+   *
+   * @property {Record<string, any> | null | string} [data] - request parameter.
+   * @property {Record<string, any> | null | string} [data] - 请求参数。
+   *
+   * @property {number} [timeout] - Timeout duration in milliseconds for the request.
+   * @property {number} [timeout] - 请求的超时时间（毫秒）。
+   *
+   * @property {boolean} [isStream] - Whether the response should be treated as a stream.
+   * @property {boolean} [isStream] - 响应是否应视为流。
+   *
+   * @property {<T>(chunk: T) => void} [streamCallback] - Callback function for handling stream chunks.
+   * @property {<T>(chunk: T) => void} [streamCallback] - 处理流块的回调函数。
+   *
+   * @property {string} [baseURL] - Base URL for the request.
+   * @property {string} [baseURL] - 请求的基础 URL。
+   *
+   * @property {ResponseInterceptor} [responseInterceptor] - Interceptor for processing the response.
+   * @property {ResponseInterceptor} [responseInterceptor] - 处理响应的拦截器。
+   *
+   * @property {RequestInterceptor} [requestInterceptor] - Interceptor for processing the request.
+   * @property {RequestInterceptor} [requestInterceptor] - 处理请求的拦截器。
+   *
+   * Error object
+   * 错误对象。
+   * @interface JFetchError
+   *
+   * @property {number} code - The error code.
+   * @property {number} code - 错误码。
+   *
+   * @property {string} message - The error message.
+   * @property {string} message - 错误信息。
+   *
+   * @property {string} url - The request URL.
+   * @property {string} url - 请求 URL。
+   *
+   * @property {Headers} requestHeaders - The request headers.
+   * @property {Headers} requestHeaders - 请求头。
+   *
+   * @property {Headers} responseHeaders - The response headers.
+   * @property {Headers} responseHeaders - 响应头。
+   */
+  public request<T = any>(url: string, { headers, ...options }: Omit<JFetchOptions, 'baseURL'> = {}) {
+    const _headers = mergeHeaders(this.headers, headers);
+    let _url = this.baseURL;
+    if (_url.charAt(_url.length - 1) === '/') {
+      _url = _url.slice(0, _url.length - 1);
+    }
+    _url += url;
+    const controller = request<T>(_url, {
+      ...this.config,
+      ...options,
+      headers: _headers,
+      requestInterceptor: this.requestInterceptor,
+      responseInterceptor: this.responseInterceptor,
+    })
+    this.requestQueue.push(controller);
+    return controller;
+  }
+  /**
+   * Sends an HTTP GET request.
+   * 发送 HTTP GET 请求。
+   *
+   * @template T - The type of the response data.
+   * @template T - 响应数据的类型。
+   *
+   * @template P - The type of the request parameter.
+   * @template P - 请求参数的类型。
+   *
+   * @param {string} url - The URL to which the request is sent.
+   * @param {string} url - 发送请求的 URL。
+   *
+   * @param {P} [params] - The query parameters to include in the request.
+   * @param {P} [params] - 请求中包含的查询参数。
+   *
+   * @param {Omit<JFetchOptions, 'baseURL' | 'data' | 'params'>} [options]
+   * @extends [RequestInit](https://developer.mozilla.org/en-US/docs/Web/API/RequestInit)
+   *
+   * @property {number} [timeout] - Timeout duration in milliseconds for the request.
+   * @property {number} [timeout] - 请求的超时时间（毫秒）。
+   *
+   * @property {boolean} [isStream] - Whether the response should be treated as a stream.
+   * @property {boolean} [isStream] - 响应是否应视为流。
+   *
+   * @property {function} [streamCallback] - Callback function for handling stream chunks.
+   * @property {<T>(chunk: T) => void} [streamCallback] - 处理流块的回调函数。
+   *
+   * @property {ResponseInterceptor} [responseInterceptor] - Interceptor for processing the response.
+   * @property {ResponseInterceptor} [responseInterceptor] - 处理响应的拦截器。
+   *
+   * @property {RequestInterceptor} [requestInterceptor] - Interceptor for processing the request.
+   * @property {RequestInterceptor} [requestInterceptor] - 处理请求的拦截器。
+   *
+   * Error object
+   * 错误对象。
+   * @interface JFetchError
+   *
+   * @property {number} code - The error code.
+   * @property {number} code - 错误码。
+   *
+   * @property {string} message - The error message.
+   * @property {string} message - 错误信息。
+   *
+   * @property {string} url - The request URL.
+   * @property {string} url - 请求 URL。
+   *
+   * @property {Headers} requestHeaders - The request headers.
+   * @property {Headers} requestHeaders - 请求头。
+   *
+   * @property {Headers} responseHeaders - The response headers.
+   * @property {Headers} responseHeaders - 响应头。
+   */
+  get<T = any, P = any>(url: string, params: P = {} as P, options?: Omit<JFetchOptions, 'params' | 'baseURL'>) {
+    return this.request<T>(url, {
+      ...options,
+      params: params as unknown as JFetchOptions['params'],
+      method: Method.GET
+    })
+  }
+  /**
+   * Sends an HTTP POST request.
+   * 发送 HTTP POST 请求。
+   *
+   * @template T - The type of the response data.
+   * @template T - 响应数据的类型。
+   *
+   * @template D - The type of the request parameter.
+   * @template D - 请求参数的类型。
+   *
+   * @param {string} url - The URL to which the request is sent.
+   * @param {string} url - 发送请求的 URL。
+   *
+   * @param {D} [data] - request parameter.
+   * @param {D} [data] - 请求参数。
+   *
+   * @param {Omit<JFetchOptions, 'baseURL' | 'data'>} [options]
+   * @extends [RequestInit](https://developer.mozilla.org/en-US/docs/Web/API/RequestInit)
+   *
+   * @property {number} [timeout] - Timeout duration in milliseconds for the request.
+   * @property {number} [timeout] - 请求的超时时间（毫秒）。
+   *
+   * @param {Record<string, any>} [params] - The query parameters contained in the request.
+   *
+   * @param {Record<string, any>} [params] - 请求中包含的查询参数。
+   *
+   * @property {boolean} [isStream] - Whether the response should be treated as a stream.
+   * @property {boolean} [isStream] - 响应是否应视为流。
+   *
+   * @property {<T>(chunk: T) => void} [streamCallback] - Callback function for handling stream chunks.
+   * @property {<T>(chunk: T) => void} [streamCallback] - 处理流块的回调函数。
+   *
+   * @property {ResponseInterceptor} [responseInterceptor] - Interceptor for processing the response.
+   * @property {ResponseInterceptor} [responseInterceptor] - 处理响应的拦截器。
+   *
+   * @property {RequestInterceptor} [requestInterceptor] - Interceptor for processing the request.
+   * @property {RequestInterceptor} [requestInterceptor] - 处理请求的拦截器。
+   *
+   * Error object
+   * 错误对象。
+   * @interface JFetchError
+   *
+   * @property {number} code - The error code.
+   * @property {number} code - 错误码。
+   *
+   * @property {string} message - The error message.
+   * @property {string} message - 错误信息。
+   *
+   * @property {string} url - The request URL.
+   * @property {string} url - 请求 URL。
+   *
+   * @property {Headers} requestHeaders - The request headers.
+   * @property {Headers} requestHeaders - 请求头。
+   *
+   * @property {Headers} responseHeaders - The response headers.
+   * @property {Headers} responseHeaders - 响应头。
+   */
+  post<T = any, D = any>(url: string, data: D = {} as D, options?: Omit<JFetchOptions, 'data' | 'baseURL'>) {
+    return this.request<T>(url, {
+      ...options,
+      data: data as unknown as JFetchOptions['data'],
+      method: Method.POST
+    })
+  }
+  /**
+   * Sends an HTTP PUT request.
+   * 发送 HTTP PUT 请求。
+   *
+   * @template T - The type of the response data.
+   * @template T - 响应数据的类型。
+   *
+   * @template D - The type of the request parameter.
+   * @template D - 请求参数的类型。
+   *
+   * @param {string} url - The URL to which the request is sent.
+   * @param {string} url - 发送请求的 URL。
+   *
+   * @param {D} [data] - request parameter.
+   * @param {D} [data] - 请求参数。
+   *
+   * @param {Omit<JFetchOptions, 'baseURL' | 'data'>} [options]
+   * @extends [RequestInit](https://developer.mozilla.org/en-US/docs/Web/API/RequestInit)
+   *
+   * @property {number} [timeout] - Timeout duration in milliseconds for the request.
+   * @property {number} [timeout] - 请求的超时时间（毫秒）。
+   *
+   * @param {Record<string, any>} [params] - The query parameters contained in the request.
+   * @param {Record<string, any>} [params] - 请求中包含的查询参数。
+   *
+   * @property {boolean} [isStream] - Whether the response should be treated as a stream.
+   * @property {boolean} [isStream] - 响应是否应视为流。
+   *
+   * @property {<T>(chunk: T) => void} [streamCallback] - Callback function for handling stream chunks.
+   * @property {<T>(chunk: T) => void} [streamCallback] - 处理流块的回调函数。
+   *
+   * @property {ResponseInterceptor} [responseInterceptor] - Interceptor for processing the response.
+   * @property {ResponseInterceptor} [responseInterceptor] - 处理响应的拦截器。
+   *
+   * @property {RequestInterceptor} [requestInterceptor] - Interceptor for processing the request.
+   * @property {RequestInterceptor} [requestInterceptor] - 处理请求的拦截器。
+   *
+   * Error object
+   * 错误对象。
+   * @interface JFetchError
+   *
+   * @property {number} code - The error code.
+   * @property {number} code - 错误码。
+   *
+   * @property {string} message - The error message.
+   * @property {string} message - 错误信息。
+   *
+   * @property {string} url - The request URL.
+   * @property {string} url - 请求 URL。
+   *
+   * @property {Headers} requestHeaders - The request headers.
+   * @property {Headers} requestHeaders - 请求头。
+   *
+   * @property {Headers} responseHeaders - The response headers.
+   * @property {Headers} responseHeaders - 响应头。
+   */
+  put<T = any, D = any>(url: string, data: D = {} as D, options?: Omit<JFetchOptions, 'data' | 'baseURL'>) {
+    return this.request<T>(url, {
+      ...options,
+      data: data as unknown as JFetchOptions['data'],
+      method: Method.PUT
+    })
+  }
+  /**
+   * Sends an HTTP DELETE request.
+   * 发送 HTTP DELETE 请求。
+   *
+   * @template T - The type of the response data.
+   * @template T - 响应数据的类型。
+   *
+   * @param {string} url - The URL to which the request is sent.
+   * @param {string} url - 发送请求的 URL。
+   *
+   * @param {Omit<JFetchOptions, 'baseURL' | 'data'>} [options]
+   * @extends [RequestInit](https://developer.mozilla.org/en-US/docs/Web/API/RequestInit)
+   *
+   * @property {number} [timeout] - Timeout duration in milliseconds for the request.
+   * @property {number} [timeout] - 请求的超时时间（毫秒）。
+   *
+   * @property {boolean} [isStream] - Whether the response should be treated as a stream.
+   * @property {boolean} [isStream] - 响应是否应视为流。
+   *
+   * @param {Record<string, any>} [params] - The query parameters contained in the request.
+   *
+   * @param {Record<string, any>} [params] - 请求中包含的查询参数。
+   *
+   * @property {<T>(chunk: T) => void} [streamCallback] - Callback function for handling stream chunks.
+   * @property {<T>(chunk: T) => void} [streamCallback] - 处理流块的回调函数。
+   *
+   * @property {ResponseInterceptor} [responseInterceptor] - Interceptor for processing the response.
+   * @property {ResponseInterceptor} [responseInterceptor] - 处理响应的拦截器。
+   *
+   * @property {RequestInterceptor} [requestInterceptor] - Interceptor for processing the request.
+   * @property {RequestInterceptor} [requestInterceptor] - 处理请求的拦截器。
+   *
+   * Error object
+   * 错误对象。
+   * @interface JFetchError
+   *
+   * @property {number} code - The error code.
+   * @property {number} code - 错误码。
+   *
+   * @property {string} message - The error message.
+   * @property {string} message - 错误信息。
+   *
+   * @property {string} url - The request URL.
+   * @property {string} url - 请求 URL。
+   *
+   * @property {Headers} requestHeaders - The request headers.
+   * @property {Headers} requestHeaders - 请求头。
+   *
+   * @property {Headers} responseHeaders - The response headers.
+   * @property {Headers} responseHeaders - 响应头。
+   */
+  delete<T = any>(url: string, options?: Omit<JFetchOptions, 'data' | 'baseURL'>) {
+    return this.request<T>(url, {
+      ...options,
+      method: Method.DELETE
+    })
+  }
+  /**
+   * Sends an HTTP PATCH request.
+   * 发送 HTTP PATCH 请求。
+   *
+   * @template T - The type of the response data.
+   * @template T - 响应数据的类型。
+   *
+   * @template D - The type of the request parameter.
+   * @template D - 请求参数的类型。
+   *
+   * @param {string} url - The URL to which the request is sent.
+   * @param {string} url - 发送请求的 URL。
+   *
+   * @param {D} [data] - request parameter.
+   * @param {D} [data] - 请求参数。
+   *
+   * @param {Omit<JFetchOptions, 'baseURL' | 'data'>} [options]
+   * @extends [RequestInit](https://developer.mozilla.org/en-US/docs/Web/API/RequestInit)
+   *
+   * @property {number} [timeout] - Timeout duration in milliseconds for the request.
+   * @property {number} [timeout] - 请求的超时时间（毫秒）。
+   *
+   * @param {Record<string, any>} [params] - The query parameters contained in the request.
+   * @param {Record<string, any>} [params] - 请求中包含的查询参数。
+   *
+   * @property {boolean} [isStream] - Whether the response should be treated as a stream.
+   * @property {boolean} [isStream] - 响应是否应视为流。
+   *
+   * @property {<T>(chunk: T) => void} [streamCallback] - Callback function for handling stream chunks.
+   * @property {<T>(chunk: T) => void} [streamCallback] - 处理流块的回调函数。
+   *
+   * @property {ResponseInterceptor} [responseInterceptor] - Interceptor for processing the response.
+   * @property {ResponseInterceptor} [responseInterceptor] - 处理响应的拦截器。
+   *
+   * @property {RequestInterceptor} [requestInterceptor] - Interceptor for processing the request.
+   * @property {RequestInterceptor} [requestInterceptor] - 处理请求的拦截器。
+   *
+   * Error object
+   * 错误对象。
+   * @interface JFetchError
+   *
+   * @property {number} code - The error code.
+   * @property {number} code - 错误码。
+   *
+   * @property {string} message - The error message.
+   * @property {string} message - 错误信息。
+   *
+   * @property {string} url - The request URL.
+   * @property {string} url - 请求 URL。
+   *
+   * @property {Headers} requestHeaders - The request headers.
+   * @property {Headers} requestHeaders - 请求头。
+   *
+   * @property {Headers} responseHeaders - The response headers.
+   * @property {Headers} responseHeaders - 响应头。
+   */
+  patch<T = any, D = any>(url: string, data: D = {} as D, options?: Omit<JFetchOptions, 'data' | 'baseURL'>) {
+    return this.request<T>(url, {
+      ...options,
+      data: data as unknown as JFetchOptions['data'],
+      method: Method.PATCH
+    })
+  }
+  /**
+   * Sends an HTTP HEAD request.
+   * 发送 HTTP HEAD 请求。
+   *
+   * @template T - The type of the response data.
+   * @template T - 响应数据的类型。
+   *
+   * @template P - The type of the request parameter.
+   * @template P - 请求参数的类型。
+   *
+   * @param {string} url - The URL to which the request is sent.
+   * @param {string} url - 发送请求的 URL。
+   *
+   * @param {P} [params] - The query parameters to include in the request.
+   * @param {P} [params] - 请求中包含的查询参数。
+   *
+   * @param {Omit<JFetchOptions, 'baseURL' | 'data'>} [options]
+   * @extends [RequestInit](https://developer.mozilla.org/en-US/docs/Web/API/RequestInit)
+   *
+   * @property {number} [timeout] - Timeout duration in milliseconds for the request.
+   * @property {number} [timeout] - 请求的超时时间（毫秒）。
+   *
+   * @property {boolean} [isStream] - Whether the response should be treated as a stream.
+   * @property {boolean} [isStream] - 响应是否应视为流。
+   *
+   * @property {<T>(chunk: T) => void} [streamCallback] - Callback function for handling stream chunks.
+   * @property {<T>(chunk: T) => void} [streamCallback] - 处理流块的回调函数。
+   *
+   * @property {ResponseInterceptor} [responseInterceptor] - Interceptor for processing the response.
+   * @property {ResponseInterceptor} [responseInterceptor] - 处理响应的拦截器。
+   *
+   * @property {RequestInterceptor} [requestInterceptor] - Interceptor for processing the request.
+   * @property {RequestInterceptor} [requestInterceptor] - 处理请求的拦截器。
+   *
+   * Error object
+   * 错误对象。
+   * @interface JFetchError
+   *
+   * @property {number} code - The error code.
+   * @property {number} code - 错误码。
+   *
+   * @property {string} message - The error message.
+   * @property {string} message - 错误信息。
+   *
+   * @property {string} url - The request URL.
+   * @property {string} url - 请求 URL。
+   *
+   * @property {Headers} requestHeaders - The request headers.
+   * @property {Headers} requestHeaders - 请求头。
+   *
+   * @property {Headers} responseHeaders - The response headers.
+   * @property {Headers} responseHeaders - 响应头。
+   */
+  head<T = any, P = any>(url: string, params: P = {} as P, options?: Omit<JFetchOptions, 'params' | 'baseURL'>) {
+    return this.request<T>(url, {
+      ...options,
+      params: params as unknown as JFetchOptions['params'],
+      method: Method.HEAD
+    })
+  }
+  /**
+   * Sends an HTTP OPTIONS request.
+   * 发送 HTTP OPTIONS 请求。
+   *
+   * @template T - The type of the response data.
+   * @template T - 响应数据的类型。
+   *
+   * @template P - The type of the request parameter.
+   * @template P - 请求参数的类型。
+   *
+   * @param {string} url - The URL to which the request is sent.
+   * @param {string} url - 发送请求的 URL。
+   *
+   * @param {P} [params] - The query parameters to include in the request.
+   * @param {P} [params] - 请求中包含的查询参数。
+   *
+   * @param {Omit<JFetchOptions, 'baseURL' | 'data'>} [options]
+   * @extends [RequestInit](https://developer.mozilla.org/en-US/docs/Web/API/RequestInit)
+   *
+   * @property {number} [timeout] - Timeout duration in milliseconds for the request.
+   * @property {number} [timeout] - 请求的超时时间（毫秒）。
+   *
+   * @property {boolean} [isStream] - Whether the response should be treated as a stream.
+   * @property {boolean} [isStream] - 响应是否应视为流。
+   *
+   * @property {<T>(chunk: T) => void} [streamCallback] - Callback function for handling stream chunks.
+   * @property {<T>(chunk: T) => void} [streamCallback] - 处理流块的回调函数。
+   *
+   * @property {ResponseInterceptor} [responseInterceptor] - Interceptor for processing the response.
+   * @property {ResponseInterceptor} [responseInterceptor] - 处理响应的拦截器。
+   *
+   * @property {RequestInterceptor} [requestInterceptor] - Interceptor for processing the request.
+   * @property {RequestInterceptor} [requestInterceptor] - 处理请求的拦截器。
+   *
+   * Error object
+   * 错误对象。
+   * @interface JFetchError
+   *
+   * @property {number} code - The error code.
+   * @property {number} code - 错误码。
+   *
+   * @property {string} message - The error message.
+   * @property {string} message - 错误信息。
+   *
+   * @property {string} url - The request URL.
+   * @property {string} url - 请求 URL。
+   *
+   * @property {Headers} requestHeaders - The request headers.
+   * @property {Headers} requestHeaders - 请求头。
+   *
+   * @property {Headers} responseHeaders - The response headers.
+   * @property {Headers} responseHeaders - 响应头。
+   */
+  options<T = any, P = any>(url: string, params: P = {} as P, options?: Omit<JFetchOptions, 'params' | 'baseURL'>) {
+    return this.request<T>(url, {
+      ...options,
+      params: params as unknown as JFetchOptions['params'],
+      method: Method.OPTIONS
+    })
+  }
+
+  /**
+   * Request interceptor manager.
+   * 请求拦截器管理器。
+   */
+  requestInterceptor = new InterceptorManager<JFetchOptions & { url: string; }>();
+
+  /**
+   * Response interceptor manager.
+   * 响应拦截器管理器。
+   */
+  responseInterceptor = new InterceptorManager<any>();
+
+  /**
+   * Abort all requests.
+   * 终止所有请求。
+   */
+  abortAll(){
+    this.requestQueue.forEach(item => {
+      item.abort();
+    })
+    this.requestQueue = [];
+  }
+}
+
+export default JFetch;

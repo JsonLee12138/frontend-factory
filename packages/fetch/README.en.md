@@ -1,71 +1,145 @@
-## JSON WebSocket
-[中文文档](https://github.com/JsonLee12138/frontend-factory/tree/main/packages/socket/README.md)
+## JFetch Documentation
+[中文文档](#)
 
 ### Introduction
-JSON WebSocket is a `Socket` class for managing WebSocket connections with a `WebSocket` wrapper with various reconnect, heartbeat message and event handling options, with good code hints.
+JFetch is an HTTP request library based on `fetch` that provides a similar experience to `axios`. It not only supports common HTTP request methods but also adds stream handling and a more concise request aborting method.
 
-### Class: `Socket<T = any>`
-This class provides a WebSocket wrapper with enhanced functionality, including automatic reconnections and heartbeat messages.
+### Differences from axios
+- **Stream Handling Support**: JFetch has built-in support for stream handling, making it easy to process streaming response data.
+- **Simpler Request Aborting Method**: JFetch offers a more concise request aborting method. You can abort a request simply by calling the `abort` method on the request instance.
+- **Uses fetch**: JFetch is based on `fetch`, enjoying all the advantages of `fetch`, such as native support and good browser compatibility.
 
-#### Static Properties
-- `ReadyState: SocketReadyState`
+### Usage
+
+#### Installation
+```bash
+npm install jsonlee-fetch
+```
+
+#### Import
+```javascript
+import JFetch, { request, get, post, put, del, patch, head, options } from 'jsonlee-fetch';
+```
+
+#### Configuration Options
+```typescript
+/**
+ * JFetch request configuration options.
+ *
+ * @param {string} url Request URL
+ * @param {Record<string, any>} [params] Query parameters to include in the request URL.
+ * @param {Record<string, any> | null | string} [data] Request parameters.
+ * @param {number} [timeout] Request timeout duration in milliseconds.
+ * @param {boolean} [isStream] Whether the response should be treated as a stream.
+ * @param {<T>(chunk: T) => void} [streamCallback] Callback function for handling stream chunks.
+ * @param {string} [baseURL] Base URL for the request.
+ * @param {ResponseInterceptor} [responseInterceptor] Interceptor for processing the response.
+ * @param {RequestInterceptor} [requestInterceptor] Interceptor for processing the request.
+ */
+```
+
+### API Documentation
 
 #### Constructor
-```typescript
-constructor(
-  url: string,
-  options?: SocketOptions<T>
-)
+```javascript
+const jfetch = new JFetch({
+  baseURL: 'https://api.example.com',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  timeout: 5000,
+});
 ```
-- **url**: The WebSocket URL to connect to.
-- **options**: Configuration options for the WebSocket.
-  - **showLog**: Whether to show logs.
-  - **reconnectInterval**: Interval in milliseconds between reconnection attempts.
-  - **heartbeatInterval**: Interval in milliseconds between heartbeat messages.
-  - **heartbeatMessage**: Message sent as a heartbeat to keep the connection alive.
-  - **maxReconnectAttempts**: Maximum number of reconnection attempts. 0 means no reconnection.
-  - **onClose**: Callback function to execute when the WebSocket connection is closed.
-  - **onError**: Callback function to execute when an error occurs.
-  - **onMessage**: Callback function to execute when a message is received.
-  - **onOpen**: Callback function to execute when the WebSocket connection is opened.
-  - **protocols**: An array of protocols to use in the WebSocket connection.
 
-#### Methods
-- **getInstance()**
-  - Returns the current WebSocket instance.
+#### Request Methods
+JFetch provides request methods similar to axios:
 
-- **connect()**
-  - Establishes a WebSocket connection.
-
-- **send<T = any>(e: T)**
-  - Sends a message without converting it to a string.
-
-- **close()**
-  - Closes the WebSocket connection manually.
-
-- **stopHeartBeat()**
-  - Stops the heartbeat mechanism.
-
-- **getState()**
-  - Gets the current WebSocket connection state.
-
-### Example
+- **get**
 ```typescript
-import { SocketReadyState, Socket } from 'jsonlee-ws';
+jfetch.get<T, P>(url: string, params?: P, options?: Omit<JFetchOptions, 'params' | 'baseURL'>): JFetchAbortablePromise<T>
+```
+- **post**
+```typescript
+jfetch.post<T, D>(url: string, data?: D, options?: Omit<JFetchOptions, 'data' | 'baseURL'>): JFetchAbortablePromise<T>
+```
+- **put**
+```typescript
+jfetch.put<T, D>(url: string, data?: D, options?: Omit<JFetchOptions, 'data' | 'baseURL'>): JFetchAbortablePromise<T>
+```
+- **delete**
+```typescript
+jfetch.delete<T>(url: string, options?: Omit<JFetchOptions, 'data' | 'baseURL'>): JFetchAbortablePromise<T>
+```
+- **patch**
+```typescript
+jfetch.patch<T, D>(url: string, data?: D, options?: Omit<JFetchOptions, 'data' | 'baseURL'>): JFetchAbortablePromise<T>
+```
+- **head**
+```typescript
+jfetch.head<T, P>(url: string, params?: P, options?: Omit<JFetchOptions, 'params' | 'baseURL'>): JFetchAbortablePromise<T>
+```
+- **options**
+```typescript
+jfetch.options<T, P>(url: string, params?: P, options?: Omit<JFetchOptions, 'params' | 'baseURL'>): JFetchAbortablePromise<T>
+```
 
-// Define options for the socket
-const options = {
-  showLog: true,
-  reconnectInterval: 2000,
-  heartbeatInterval: 5000,
-  heartbeatMessage: "ping",
-  maxReconnectAttempts: 5,
-  onClose: (e: any) => console.log('WebSocket closed:', e),
-  onError: (e: any) => console.error('WebSocket error:', e),
-  onMessage: (msg: any) => console.log('WebSocket message:', msg),
-  onOpen: (e: any) => console.log('WebSocket opened:', e),
-  protocols: ['protocol1', 'protocol2']
-};
+#### Static Methods
+JFetch also provides static methods for use without instantiation:
+- **request**
+```typescript
+JFetch.request<T = any>(url: string, options?: JFetchOptions): JFetchAbortablePromise<T>
+```
+- **get**
+```typescript
+JFetch.get<T = any, P = any>(url: string, params?: P, options?: Omit<JFetchOptions, 'params' | 'baseURL'>): JFetchAbortablePromise<T>
+```
+- **post**
+```typescript
+JFetch.post<T = any, D = any>(url: string, data?: D, options?: Omit<JFetchOptions, 'data' | 'baseURL'>): JFetchAbortablePromise<T>
+```
+- **put**
+```typescript
+JFetch.put<T = any, D = any>(url: string, data?: D, options?: Omit<JFetchOptions, 'data' | 'baseURL'>): JFetchAbortablePromise<T>
+```
+- **delete**
+```typescript
+JFetch.delete<T = any>(url: string, options?: Omit<JFetchOptions, 'data' | 'baseURL'>): JFetchAbortablePromise<T>
+```
+- **patch**
+```typescript
+JFetch.patch<T = any, D = any>(url: string, data?: D, options?: Omit<JFetchOptions, 'data' | 'baseURL'>): JFetchAbortablePromise<T>
+```
+- **head**
+```typescript
+JFetch.head<T = any, P = any>(url: string, params?: P, options?: Omit<JFetchOptions, 'params' | 'baseURL'>): JFetchAbortablePromise<T>
+```
+- **options**
+```typescript
+JFetch.options<T = any, P = any>(url: string, params?: P, options?: Omit<JFetchOptions, 'params' | 'baseURL'>): JFetchAbortablePromise<T>
+```
 
-const socket = new Socket('ws://localhost:8080', options);
+### Aborting Requests
+You can easily abort a request by calling the `abort` method on the request instance:
+```javascript
+const req = jfetch.get('/endpoint');
+req.abort();  // Abort the request
+```
+
+#### Aborting All Requests
+```javascript
+jfetch.abortAll();
+```
+
+### Interceptors
+JFetch provides request and response interceptors, allowing you to process the request before sending it or the response after it arrives.
+```javascript
+jfetch.requestInterceptor.use(async (config) => {
+  // Process before the request is sent
+  return config;
+});
+
+jfetch.responseInterceptor.use(async (response) => {
+  // Process after the response arrives
+  return response;
+});
 ```
