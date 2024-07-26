@@ -21,9 +21,9 @@ const controller = req.get('/todos/1');
 // controller.abort();
 // const controller = JFetch.request(testUrl)
 // const controller = get(testUrl)
-console.log(controller);
+// console.log(controller);
 controller.then(res=> {
-  console.log(res);
+  // console.log(res);
 
 })
 async function test() {

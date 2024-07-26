@@ -203,7 +203,7 @@ export function request<T = any>(url: string, { headers: _headers, timeout = 300
       ]) as Response;
       res.headers.get('Content-Type');
       if (res.ok) {
-        if (res.headers.get('Content-Type')?.includes(ContentType.STREAM) || res.headers.get('Transfer-Encoding') === 'chunked' || isStream) {
+        if (isStream) {
           resolve(handleStream(res, streamCallback) as T);
         }
         if (responseInterceptor) {
