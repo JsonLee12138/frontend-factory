@@ -189,7 +189,7 @@ export function request<T = any>(url: string, { headers: _headers, timeout = 300
         data = null;
       }
     }
-    url = buildUrl(url);
+    url = buildUrl(url, params);
     try {
       const res = await Promise.race([
         fetch(url, {

@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import HelloWorld from './components/HelloWorld.vue'
-import JFetch, { get, request } from 'jsonlee-fetch';
-const testUrl = "https://jsonplaceholder.typicode.com/todos/1";
+import HelloWorld from './components/HelloWorld.vue';
+import JFetch, { get, request } from 'jsonlee-fetch/src';
+const testUrl = 'https://jsonplaceholder.typicode.com/todos/1';
 
 const req = new JFetch({
-  baseURL: "https://jsonplaceholder.typicode.com",
+  baseURL: 'https://restapi.amap.com/v3',
   headers: {
-    "Content-Type": "application/json",
+    'Content-Type': 'application/json',
   },
 });
 // req.responseInterceptor.use((res)=> {
@@ -17,17 +17,19 @@ const req = new JFetch({
 //   config.url = 'todos/2'
 //   return config;
 // })
-const controller = req.get('/todos/1');
+const controller = req.get('/place/text', {
+  key: 'a512f63f8f2ab662a21bcc052da3ca30',
+  keywords: '成都',
+  offset: 10,
+});
 // controller.abort();
 // const controller = JFetch.request(testUrl)
 // const controller = get(testUrl)
 // console.log(controller);
-controller.then(res=> {
-  // console.log(res);
-
-})
+controller.then((res) => {
+  console.log(res);
+});
 async function test() {
-
   // const res = await controller;
   // controller.abort();
   // console.log(res);
