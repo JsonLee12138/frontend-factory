@@ -1,6 +1,6 @@
 import qs from "qs";
 import { ContentType, Method, StatusCode } from "./enums";
-import { JFetchAbortablePromise, JFetchError, JFetchOptions } from "./types";
+import { JFetchAbortablePromise, JFetchError, JFetchOptions, JFetchRequestOptions, JFetchRequestWithDataOptions, JFetchRequestWithParamsOptions } from "./types";
 import InterceptorManager from "./interceptor";
 import { __extends } from 'tslib';
 
@@ -102,8 +102,19 @@ class AbortablePromise<T> implements JFetchAbortablePromise<T> {
  * @property {<T>(chunk: T) => void} [streamCallback] - Callback function for handling stream chunks.
  * @property {<T>(chunk: T) => void} [streamCallback] - 处理流块的回调函数。
  *
- * @property {string} [baseURL] - Base URL for the request.
- * @property {string} [baseURL] - 请求的基础 URL。
+ * @property {"indices" | "brackets" | "repeat" | "comma" | undefined} [qsArrayFormat]
+ * - Specifies the array format to use when serializing array parameters with `qs.stringify`, default value is `"repeat"`.
+ * - 指定在使用 `qs.stringify` 序列化数组参数时使用的数组格式, 默认值是`"repeat"`。
+ *   - `"indices"`: Serializes arrays as indexed keys, e.g., `array[0]=1&array[1]=2`.
+ *   - `"indices"`：将数组序列化为带有索引的键值对，例如，`array[0]=1&array[1]=2`。
+ *   - `"brackets"`: Serializes arrays as bracketed keys, e.g., `array[]=1&array[]=2`.
+ *   - `"brackets"`：将数组序列化为带有方括号的键值对，例如，`array[]=1&array[]=2`。
+ *   - `"repeat"`: Serializes arrays as repeated keys, e.g., `array=1&array=2`.
+ *   - `"repeat"`：将数组序列化为重复的键值对，例如，`array=1&array=2`。
+ *   - `"comma"`: Serializes arrays as comma-separated values, e.g., `array=1,2`.
+ *   - `"comma"`：将数组序列化为逗号分隔的字符串，例如，`array=1,2`。
+ *   - `undefined`: Uses the default array format of `qs.stringify`.
+ *   - `undefined`：使用 `qs.stringify` 的默认数组格式。
  *
  * @property {ResponseInterceptor} [responseInterceptor] - Interceptor for processing the response.
  * @property {ResponseInterceptor} [responseInterceptor] - 处理响应的拦截器。
@@ -133,7 +144,7 @@ class AbortablePromise<T> implements JFetchAbortablePromise<T> {
  * @property {Headers} responseHeaders - The response headers.
  * @property {Headers} responseHeaders - 响应头。
  */
-export function request<T = any>(url: string, { headers: _headers, timeout = 3000, isStream = false, streamCallback = () => { }, method = Method.GET, params, data, responseInterceptor, requestInterceptor, errorInterceptor,mode = 'cors', ...options }: Omit<JFetchOptions, 'baseURL'> = {}): JFetchAbortablePromise<T> {
+export function request<T = any>(url: string, { headers: _headers, timeout = 3000, isStream = false, streamCallback = () => { }, method = Method.GET, params, data, responseInterceptor, requestInterceptor, errorInterceptor,mode = 'cors', qsArrayFormat = "repeat",...options }: JFetchRequestOptions = {}): JFetchAbortablePromise<T> {
   let headers = mergeHeaders(baseHeaders, _headers);
   const controller = new AbortController();
   const signal = controller.signal;
@@ -171,7 +182,7 @@ export function request<T = any>(url: string, { headers: _headers, timeout = 300
         if (_contentType.includes(ContentType.JSON)) {
           data = JSON.stringify(data);
         } else if (_contentType.includes(ContentType.FORM_URLENCODED)) {
-          data = qs.stringify(data, { arrayFormat: 'repeat' });
+          data = qs.stringify(data, { arrayFormat: qsArrayFormat, });
         } else if (_contentType.includes(ContentType.FORM_DATA)) {
           const formData = new FormData();
           if (!(data instanceof FormData) && typeof data === 'object') {
@@ -189,7 +200,7 @@ export function request<T = any>(url: string, { headers: _headers, timeout = 300
         data = null;
       }
     }
-    url = buildUrl(url, params);
+    url = buildUrl(url, params, qsArrayFormat);
     try {
       const res = await Promise.race([
         fetch(url, {
@@ -241,7 +252,7 @@ export function request<T = any>(url: string, { headers: _headers, timeout = 300
         }
       }else{
         errorTemp = genError({
-          code: StatusCode.NETWORK_ERROR,
+          code: (err as {code: number | string}).code || StatusCode.NETWORK_ERROR,
           message: error.message || 'Network error or other problem',
           requestHeaders: headers,
           responseHeaders: new Headers(),
@@ -287,6 +298,20 @@ export function request<T = any>(url: string, { headers: _headers, timeout = 300
  * @property {function} [streamCallback] - Callback function for handling stream chunks.
  * @property {<T>(chunk: T) => void} [streamCallback] - 处理流块的回调函数。
  *
+ * @property {"indices" | "brackets" | "repeat" | "comma" | undefined} [qsArrayFormat]
+ * - Specifies the array format to use when serializing array parameters with `qs.stringify`, default value is `"repeat"`.
+ * - 指定在使用 `qs.stringify` 序列化数组参数时使用的数组格式, 默认值是`"repeat"`。
+ *   - `"indices"`: Serializes arrays as indexed keys, e.g., `array[0]=1&array[1]=2`.
+ *   - `"indices"`：将数组序列化为带有索引的键值对，例如，`array[0]=1&array[1]=2`。
+ *   - `"brackets"`: Serializes arrays as bracketed keys, e.g., `array[]=1&array[]=2`.
+ *   - `"brackets"`：将数组序列化为带有方括号的键值对，例如，`array[]=1&array[]=2`。
+ *   - `"repeat"`: Serializes arrays as repeated keys, e.g., `array=1&array=2`.
+ *   - `"repeat"`：将数组序列化为重复的键值对，例如，`array=1&array=2`。
+ *   - `"comma"`: Serializes arrays as comma-separated values, e.g., `array=1,2`.
+ *   - `"comma"`：将数组序列化为逗号分隔的字符串，例如，`array=1,2`。
+ *   - `undefined`: Uses the default array format of `qs.stringify`.
+ *   - `undefined`：使用 `qs.stringify` 的默认数组格式。
+ *
  * @property {ResponseInterceptor} [responseInterceptor] - Interceptor for processing the response.
  * @property {ResponseInterceptor} [responseInterceptor] - 处理响应的拦截器。
  *
@@ -315,7 +340,7 @@ export function request<T = any>(url: string, { headers: _headers, timeout = 300
  * @property {Headers} responseHeaders - The response headers.
  * @property {Headers} responseHeaders - 响应头。
  */
-export function get<T = any, P = any>(url: string, params: P = {} as P, options: Omit<JFetchOptions, 'baseURL' | 'params' | 'data'> = {}): JFetchAbortablePromise<T> {
+export function get<T = any, P = any>(url: string, params: P = {} as P, options: JFetchRequestWithParamsOptions = {}): JFetchAbortablePromise<T> {
   return request<T>(url, {
     ...options,
     params: params as unknown as JFetchOptions['params'],
@@ -338,7 +363,7 @@ export function get<T = any, P = any>(url: string, params: P = {} as P, options:
  * @param {D} [data] - request parameter.
  * @param {D} [data] - 请求参数。
  *
- * @param {Omit<JFetchOptions, 'baseURL' | 'data'>} [options]
+ * @param {JFetchRequestWithDataOptions} [options]
  * @extends [RequestInit](https://developer.mozilla.org/en-US/docs/Web/API/RequestInit)
  *
  * @property {number} [timeout] - Timeout duration in milliseconds for the request.
@@ -353,6 +378,20 @@ export function get<T = any, P = any>(url: string, params: P = {} as P, options:
  *
  * @property {<T>(chunk: T) => void} [streamCallback] - Callback function for handling stream chunks.
  * @property {<T>(chunk: T) => void} [streamCallback] - 处理流块的回调函数。
+ *
+ * @property {"indices" | "brackets" | "repeat" | "comma" | undefined} [qsArrayFormat]
+ * - Specifies the array format to use when serializing array parameters with `qs.stringify`, default value is `"repeat"`.
+ * - 指定在使用 `qs.stringify` 序列化数组参数时使用的数组格式, 默认值是`"repeat"`。
+ *   - `"indices"`: Serializes arrays as indexed keys, e.g., `array[0]=1&array[1]=2`.
+ *   - `"indices"`：将数组序列化为带有索引的键值对，例如，`array[0]=1&array[1]=2`。
+ *   - `"brackets"`: Serializes arrays as bracketed keys, e.g., `array[]=1&array[]=2`.
+ *   - `"brackets"`：将数组序列化为带有方括号的键值对，例如，`array[]=1&array[]=2`。
+ *   - `"repeat"`: Serializes arrays as repeated keys, e.g., `array=1&array=2`.
+ *   - `"repeat"`：将数组序列化为重复的键值对，例如，`array=1&array=2`。
+ *   - `"comma"`: Serializes arrays as comma-separated values, e.g., `array=1,2`.
+ *   - `"comma"`：将数组序列化为逗号分隔的字符串，例如，`array=1,2`。
+ *   - `undefined`: Uses the default array format of `qs.stringify`.
+ *   - `undefined`：使用 `qs.stringify` 的默认数组格式。
  *
  * @property {ResponseInterceptor} [responseInterceptor] - Interceptor for processing the response.
  * @property {ResponseInterceptor} [responseInterceptor] - 处理响应的拦截器。
@@ -382,7 +421,7 @@ export function get<T = any, P = any>(url: string, params: P = {} as P, options:
  * @property {Headers} responseHeaders - The response headers.
  * @property {Headers} responseHeaders - 响应头。
  */
-export function post<T = any, D = any>(url: string, data: D = {} as D, options: Omit<JFetchOptions, 'baseURL' | 'data'> = {}): JFetchAbortablePromise<T> {
+export function post<T = any, D = any>(url: string, data: D = {} as D, options: JFetchRequestWithDataOptions = {}): JFetchAbortablePromise<T> {
   return request<T>(url, {
     ...options,
     data: data as unknown as JFetchOptions['data'],
@@ -405,7 +444,7 @@ export function post<T = any, D = any>(url: string, data: D = {} as D, options: 
  * @param {D} [data] - request parameter.
  * @param {D} [data] - 请求参数。
  *
- * @param {Omit<JFetchOptions, 'baseURL' | 'data'>} [options]
+ * @param {JFetchRequestWithDataOptions} [options]
  * @extends [RequestInit](https://developer.mozilla.org/en-US/docs/Web/API/RequestInit)
  *
  * @property {number} [timeout] - Timeout duration in milliseconds for the request.
@@ -419,6 +458,20 @@ export function post<T = any, D = any>(url: string, data: D = {} as D, options: 
  *
  * @property {<T>(chunk: T) => void} [streamCallback] - Callback function for handling stream chunks.
  * @property {<T>(chunk: T) => void} [streamCallback] - 处理流块的回调函数。
+ *
+ * @property {"indices" | "brackets" | "repeat" | "comma" | undefined} [qsArrayFormat]
+ * - Specifies the array format to use when serializing array parameters with `qs.stringify`, default value is `"repeat"`.
+ * - 指定在使用 `qs.stringify` 序列化数组参数时使用的数组格式, 默认值是`"repeat"`。
+ *   - `"indices"`: Serializes arrays as indexed keys, e.g., `array[0]=1&array[1]=2`.
+ *   - `"indices"`：将数组序列化为带有索引的键值对，例如，`array[0]=1&array[1]=2`。
+ *   - `"brackets"`: Serializes arrays as bracketed keys, e.g., `array[]=1&array[]=2`.
+ *   - `"brackets"`：将数组序列化为带有方括号的键值对，例如，`array[]=1&array[]=2`。
+ *   - `"repeat"`: Serializes arrays as repeated keys, e.g., `array=1&array=2`.
+ *   - `"repeat"`：将数组序列化为重复的键值对，例如，`array=1&array=2`。
+ *   - `"comma"`: Serializes arrays as comma-separated values, e.g., `array=1,2`.
+ *   - `"comma"`：将数组序列化为逗号分隔的字符串，例如，`array=1,2`。
+ *   - `undefined`: Uses the default array format of `qs.stringify`.
+ *   - `undefined`：使用 `qs.stringify` 的默认数组格式。
  *
  * @property {ResponseInterceptor} [responseInterceptor] - Interceptor for processing the response.
  * @property {ResponseInterceptor} [responseInterceptor] - 处理响应的拦截器。
@@ -448,7 +501,7 @@ export function post<T = any, D = any>(url: string, data: D = {} as D, options: 
  * @property {Headers} responseHeaders - The response headers.
  * @property {Headers} responseHeaders - 响应头。
  */
-export function put<T = any, D = any>(url: string, data: D = {} as D, options: Omit<JFetchOptions, 'baseURL' | 'data'> = {}): JFetchAbortablePromise<T> {
+export function put<T = any, D = any>(url: string, data: D = {} as D, options: JFetchRequestWithDataOptions = {}): JFetchAbortablePromise<T> {
   return request<T>(url, {
     ...options,
     data: data as unknown as JFetchOptions['data'],
@@ -465,7 +518,7 @@ export function put<T = any, D = any>(url: string, data: D = {} as D, options: O
  * @param {string} url - The URL to which the request is sent.
  * @param {string} url - 发送请求的 URL。
  *
- * @param {Omit<JFetchOptions, 'baseURL' | 'data'>} [options]
+ * @param {JFetchRequestWithDataOptions} [options]
  * @extends [RequestInit](https://developer.mozilla.org/en-US/docs/Web/API/RequestInit)
  *
  * @property {number} [timeout] - Timeout duration in milliseconds for the request.
@@ -480,6 +533,20 @@ export function put<T = any, D = any>(url: string, data: D = {} as D, options: O
  *
  * @property {<T>(chunk: T) => void} [streamCallback] - Callback function for handling stream chunks.
  * @property {<T>(chunk: T) => void} [streamCallback] - 处理流块的回调函数。
+ *
+ * @property {"indices" | "brackets" | "repeat" | "comma" | undefined} [qsArrayFormat]
+ * - Specifies the array format to use when serializing array parameters with `qs.stringify`, default value is `"repeat"`.
+ * - 指定在使用 `qs.stringify` 序列化数组参数时使用的数组格式, 默认值是`"repeat"`。
+ *   - `"indices"`: Serializes arrays as indexed keys, e.g., `array[0]=1&array[1]=2`.
+ *   - `"indices"`：将数组序列化为带有索引的键值对，例如，`array[0]=1&array[1]=2`。
+ *   - `"brackets"`: Serializes arrays as bracketed keys, e.g., `array[]=1&array[]=2`.
+ *   - `"brackets"`：将数组序列化为带有方括号的键值对，例如，`array[]=1&array[]=2`。
+ *   - `"repeat"`: Serializes arrays as repeated keys, e.g., `array=1&array=2`.
+ *   - `"repeat"`：将数组序列化为重复的键值对，例如，`array=1&array=2`。
+ *   - `"comma"`: Serializes arrays as comma-separated values, e.g., `array=1,2`.
+ *   - `"comma"`：将数组序列化为逗号分隔的字符串，例如，`array=1,2`。
+ *   - `undefined`: Uses the default array format of `qs.stringify`.
+ *   - `undefined`：使用 `qs.stringify` 的默认数组格式。
  *
  * @property {ResponseInterceptor} [responseInterceptor] - Interceptor for processing the response.
  * @property {ResponseInterceptor} [responseInterceptor] - 处理响应的拦截器。
@@ -509,7 +576,7 @@ export function put<T = any, D = any>(url: string, data: D = {} as D, options: O
  * @property {Headers} responseHeaders - The response headers.
  * @property {Headers} responseHeaders - 响应头。
  */
-export function del<T = any>(url: string, options: Omit<JFetchOptions, 'baseURL' | 'data'> = {}): JFetchAbortablePromise<T> {
+export function del<T = any>(url: string, options: JFetchRequestWithDataOptions = {}): JFetchAbortablePromise<T> {
   return request<T>(url, {
     ...options,
     method: Method.DELETE,
@@ -531,7 +598,7 @@ export function del<T = any>(url: string, options: Omit<JFetchOptions, 'baseURL'
  * @param {D} [data] - request parameter.
  * @param {D} [data] - 请求参数。
  *
- * @param {Omit<JFetchOptions, 'baseURL' | 'data'>} [options]
+ * @param {JFetchRequestWithDataOptions} [options]
  * @extends [RequestInit](https://developer.mozilla.org/en-US/docs/Web/API/RequestInit)
  *
  * @property {number} [timeout] - Timeout duration in milliseconds for the request.
@@ -545,6 +612,20 @@ export function del<T = any>(url: string, options: Omit<JFetchOptions, 'baseURL'
  *
  * @property {<T>(chunk: T) => void} [streamCallback] - Callback function for handling stream chunks.
  * @property {<T>(chunk: T) => void} [streamCallback] - 处理流块的回调函数。
+ *
+ * @property {"indices" | "brackets" | "repeat" | "comma" | undefined} [qsArrayFormat]
+ * - Specifies the array format to use when serializing array parameters with `qs.stringify`, default value is `"repeat"`.
+ * - 指定在使用 `qs.stringify` 序列化数组参数时使用的数组格式, 默认值是`"repeat"`。
+ *   - `"indices"`: Serializes arrays as indexed keys, e.g., `array[0]=1&array[1]=2`.
+ *   - `"indices"`：将数组序列化为带有索引的键值对，例如，`array[0]=1&array[1]=2`。
+ *   - `"brackets"`: Serializes arrays as bracketed keys, e.g., `array[]=1&array[]=2`.
+ *   - `"brackets"`：将数组序列化为带有方括号的键值对，例如，`array[]=1&array[]=2`。
+ *   - `"repeat"`: Serializes arrays as repeated keys, e.g., `array=1&array=2`.
+ *   - `"repeat"`：将数组序列化为重复的键值对，例如，`array=1&array=2`。
+ *   - `"comma"`: Serializes arrays as comma-separated values, e.g., `array=1,2`.
+ *   - `"comma"`：将数组序列化为逗号分隔的字符串，例如，`array=1,2`。
+ *   - `undefined`: Uses the default array format of `qs.stringify`.
+ *   - `undefined`：使用 `qs.stringify` 的默认数组格式。
  *
  * @property {ResponseInterceptor} [responseInterceptor] - Interceptor for processing the response.
  * @property {ResponseInterceptor} [responseInterceptor] - 处理响应的拦截器。
@@ -574,7 +655,7 @@ export function del<T = any>(url: string, options: Omit<JFetchOptions, 'baseURL'
  * @property {Headers} responseHeaders - The response headers.
  * @property {Headers} responseHeaders - 响应头。
  */
-export function patch<T = any, D = any>(url: string, data: D = {} as D, options: Omit<JFetchOptions, 'baseURL' | 'data'> = {}): JFetchAbortablePromise<T> {
+export function patch<T = any, D = any>(url: string, data: D = {} as D, options: JFetchRequestWithDataOptions = {}): JFetchAbortablePromise<T> {
   return request<T>(url, {
     ...options,
     data: data as unknown as JFetchOptions['data'],
@@ -597,7 +678,7 @@ export function patch<T = any, D = any>(url: string, data: D = {} as D, options:
  * @param {P} [params] - The query parameters to include in the request.
  * @param {P} [params] - 请求中包含的查询参数。
  *
- * @param {Omit<JFetchOptions, 'baseURL' | 'data'>} [options]
+ * @param {JFetchRequestWithDataOptions} [options]
  * @extends [RequestInit](https://developer.mozilla.org/en-US/docs/Web/API/RequestInit)
  *
  * @property {number} [timeout] - Timeout duration in milliseconds for the request.
@@ -608,6 +689,20 @@ export function patch<T = any, D = any>(url: string, data: D = {} as D, options:
  *
  * @property {<T>(chunk: T) => void} [streamCallback] - Callback function for handling stream chunks.
  * @property {<T>(chunk: T) => void} [streamCallback] - 处理流块的回调函数。
+ *
+ * @property {"indices" | "brackets" | "repeat" | "comma" | undefined} [qsArrayFormat]
+ * - Specifies the array format to use when serializing array parameters with `qs.stringify`, default value is `"repeat"`.
+ * - 指定在使用 `qs.stringify` 序列化数组参数时使用的数组格式, 默认值是`"repeat"`。
+ *   - `"indices"`: Serializes arrays as indexed keys, e.g., `array[0]=1&array[1]=2`.
+ *   - `"indices"`：将数组序列化为带有索引的键值对，例如，`array[0]=1&array[1]=2`。
+ *   - `"brackets"`: Serializes arrays as bracketed keys, e.g., `array[]=1&array[]=2`.
+ *   - `"brackets"`：将数组序列化为带有方括号的键值对，例如，`array[]=1&array[]=2`。
+ *   - `"repeat"`: Serializes arrays as repeated keys, e.g., `array=1&array=2`.
+ *   - `"repeat"`：将数组序列化为重复的键值对，例如，`array=1&array=2`。
+ *   - `"comma"`: Serializes arrays as comma-separated values, e.g., `array=1,2`.
+ *   - `"comma"`：将数组序列化为逗号分隔的字符串，例如，`array=1,2`。
+ *   - `undefined`: Uses the default array format of `qs.stringify`.
+ *   - `undefined`：使用 `qs.stringify` 的默认数组格式。
  *
  * @property {ResponseInterceptor} [responseInterceptor] - Interceptor for processing the response.
  * @property {ResponseInterceptor} [responseInterceptor] - 处理响应的拦截器。
@@ -637,7 +732,7 @@ export function patch<T = any, D = any>(url: string, data: D = {} as D, options:
  * @property {Headers} responseHeaders - The response headers.
  * @property {Headers} responseHeaders - 响应头。
  */
-export function head<T = any, P = any>(url: string, params: P = {} as P, options: Omit<JFetchOptions, 'baseURL' | 'params' | 'data'> = {}): JFetchAbortablePromise<T> {
+export function head<T = any, P = any>(url: string, params: P = {} as P, options: JFetchRequestWithParamsOptions = {}): JFetchAbortablePromise<T> {
   return request<T>(url, {
     ...options,
     params: params as unknown as JFetchOptions['params'],
@@ -660,7 +755,7 @@ export function head<T = any, P = any>(url: string, params: P = {} as P, options
  * @param {P} [params] - The query parameters to include in the request.
  * @param {P} [params] - 请求中包含的查询参数。
  *
- * @param {Omit<JFetchOptions, 'baseURL' | 'data'>} [options]
+ * @param {JFetchRequestWithDataOptions} [options]
  * @extends [RequestInit](https://developer.mozilla.org/en-US/docs/Web/API/RequestInit)
  *
  * @property {number} [timeout] - Timeout duration in milliseconds for the request.
@@ -671,6 +766,20 @@ export function head<T = any, P = any>(url: string, params: P = {} as P, options
  *
  * @property {<T>(chunk: T) => void} [streamCallback] - Callback function for handling stream chunks.
  * @property {<T>(chunk: T) => void} [streamCallback] - 处理流块的回调函数。
+ *
+ * @property {"indices" | "brackets" | "repeat" | "comma" | undefined} [qsArrayFormat]
+ * - Specifies the array format to use when serializing array parameters with `qs.stringify`, default value is `"repeat"`.
+ * - 指定在使用 `qs.stringify` 序列化数组参数时使用的数组格式, 默认值是`"repeat"`。
+ *   - `"indices"`: Serializes arrays as indexed keys, e.g., `array[0]=1&array[1]=2`.
+ *   - `"indices"`：将数组序列化为带有索引的键值对，例如，`array[0]=1&array[1]=2`。
+ *   - `"brackets"`: Serializes arrays as bracketed keys, e.g., `array[]=1&array[]=2`.
+ *   - `"brackets"`：将数组序列化为带有方括号的键值对，例如，`array[]=1&array[]=2`。
+ *   - `"repeat"`: Serializes arrays as repeated keys, e.g., `array=1&array=2`.
+ *   - `"repeat"`：将数组序列化为重复的键值对，例如，`array=1&array=2`。
+ *   - `"comma"`: Serializes arrays as comma-separated values, e.g., `array=1,2`.
+ *   - `"comma"`：将数组序列化为逗号分隔的字符串，例如，`array=1,2`。
+ *   - `undefined`: Uses the default array format of `qs.stringify`.
+ *   - `undefined`：使用 `qs.stringify` 的默认数组格式。
  *
  * @property {ResponseInterceptor} [responseInterceptor] - Interceptor for processing the response.
  * @property {ResponseInterceptor} [responseInterceptor] - 处理响应的拦截器。
@@ -700,7 +809,7 @@ export function head<T = any, P = any>(url: string, params: P = {} as P, options
  * @property {Headers} responseHeaders - The response headers.
  * @property {Headers} responseHeaders - 响应头。
  */
-export function options<T = any, P = any>(url: string, params: P = {} as P, options: Omit<JFetchOptions, 'baseURL' | 'params' | 'data'> = {}): JFetchAbortablePromise<T> {
+export function options<T = any, P = any>(url: string, params: P = {} as P, options: JFetchRequestWithParamsOptions = {}): JFetchAbortablePromise<T> {
   return request<T>(url, {
     ...options,
     params: params as unknown as JFetchOptions['params'],
@@ -735,9 +844,9 @@ async function handleStream(res: Response, callback: <T = any>(chunk: T | string
     }
   }
 }
-function buildUrl(url: string, params?: JFetchOptions['params']): string {
+function buildUrl(url: string, params?: JFetchOptions['params'], qsArrayFormat: JFetchOptions['qsArrayFormat'] = "repeat"): string {
   if (params) {
-    const paramsStr = qs.stringify(params, { arrayFormat: 'repeat' });
+    const paramsStr = qs.stringify(params, { arrayFormat: qsArrayFormat });
     if (paramsStr) {
       url = url.includes('?') ? `${url}&${paramsStr}` : `${url}?${paramsStr}`;
     }
@@ -843,6 +952,20 @@ class JFetch {
    * @property {<T>(chunk: T) => void} [streamCallback] - Callback function for handling stream chunks.
    * @property {<T>(chunk: T) => void} [streamCallback] - 处理流块的回调函数。
    *
+   * @property {"indices" | "brackets" | "repeat" | "comma" | undefined} [qsArrayFormat]
+   * - Specifies the array format to use when serializing array parameters with `qs.stringify`, default value is `"repeat"`.
+   * - 指定在使用 `qs.stringify` 序列化数组参数时使用的数组格式, 默认值是`"repeat"`。
+   *   - `"indices"`: Serializes arrays as indexed keys, e.g., `array[0]=1&array[1]=2`.
+   *   - `"indices"`：将数组序列化为带有索引的键值对，例如，`array[0]=1&array[1]=2`。
+   *   - `"brackets"`: Serializes arrays as bracketed keys, e.g., `array[]=1&array[]=2`.
+   *   - `"brackets"`：将数组序列化为带有方括号的键值对，例如，`array[]=1&array[]=2`。
+   *   - `"repeat"`: Serializes arrays as repeated keys, e.g., `array=1&array=2`.
+   *   - `"repeat"`：将数组序列化为重复的键值对，例如，`array=1&array=2`。
+   *   - `"comma"`: Serializes arrays as comma-separated values, e.g., `array=1,2`.
+   *   - `"comma"`：将数组序列化为逗号分隔的字符串，例如，`array=1,2`。
+   *   - `undefined`: Uses the default array format of `qs.stringify`.
+   *   - `undefined`：使用 `qs.stringify` 的默认数组格式。
+   *
    * @property {string} [baseURL] - Base URL for the request.
    * @property {string} [baseURL] - 请求的基础 URL。
    *
@@ -874,7 +997,7 @@ class JFetch {
    * @property {Headers} responseHeaders - The response headers.
    * @property {Headers} responseHeaders - 响应头。
    */
-  public request<T = any>(url: string, { headers, ...options }: Omit<JFetchOptions, 'baseURL'> = {}) {
+  public request<T = any>(url: string, { headers, ...options }: JFetchRequestOptions = {}) {
     const _headers = mergeHeaders(this.headers, headers);
     let _url = this.baseURL;
     if (_url.charAt(_url.length - 1) === '/') {
@@ -919,6 +1042,20 @@ class JFetch {
    *
    * @property {function} [streamCallback] - Callback function for handling stream chunks.
    * @property {<T>(chunk: T) => void} [streamCallback] - 处理流块的回调函数。
+   *
+   * @property {"indices" | "brackets" | "repeat" | "comma" | undefined} [qsArrayFormat]
+   * - Specifies the array format to use when serializing array parameters with `qs.stringify`, default value is `"repeat"`.
+   * - 指定在使用 `qs.stringify` 序列化数组参数时使用的数组格式, 默认值是`"repeat"`。
+   *   - `"indices"`: Serializes arrays as indexed keys, e.g., `array[0]=1&array[1]=2`.
+   *   - `"indices"`：将数组序列化为带有索引的键值对，例如，`array[0]=1&array[1]=2`。
+   *   - `"brackets"`: Serializes arrays as bracketed keys, e.g., `array[]=1&array[]=2`.
+   *   - `"brackets"`：将数组序列化为带有方括号的键值对，例如，`array[]=1&array[]=2`。
+   *   - `"repeat"`: Serializes arrays as repeated keys, e.g., `array=1&array=2`.
+   *   - `"repeat"`：将数组序列化为重复的键值对，例如，`array=1&array=2`。
+   *   - `"comma"`: Serializes arrays as comma-separated values, e.g., `array=1,2`.
+   *   - `"comma"`：将数组序列化为逗号分隔的字符串，例如，`array=1,2`。
+   *   - `undefined`: Uses the default array format of `qs.stringify`.
+   *   - `undefined`：使用 `qs.stringify` 的默认数组格式。
    *
    * @property {ResponseInterceptor} [responseInterceptor] - Interceptor for processing the response.
    * @property {ResponseInterceptor} [responseInterceptor] - 处理响应的拦截器。
@@ -971,7 +1108,7 @@ class JFetch {
    * @param {D} [data] - request parameter.
    * @param {D} [data] - 请求参数。
    *
-   * @param {Omit<JFetchOptions, 'baseURL' | 'data'>} [options]
+   * @param {JFetchRequestWithDataOptions} [options]
    * @extends [RequestInit](https://developer.mozilla.org/en-US/docs/Web/API/RequestInit)
    *
    * @property {number} [timeout] - Timeout duration in milliseconds for the request.
@@ -986,6 +1123,20 @@ class JFetch {
    *
    * @property {<T>(chunk: T) => void} [streamCallback] - Callback function for handling stream chunks.
    * @property {<T>(chunk: T) => void} [streamCallback] - 处理流块的回调函数。
+   *
+   * @property {"indices" | "brackets" | "repeat" | "comma" | undefined} [qsArrayFormat]
+   * - Specifies the array format to use when serializing array parameters with `qs.stringify`, default value is `"repeat"`.
+   * - 指定在使用 `qs.stringify` 序列化数组参数时使用的数组格式, 默认值是`"repeat"`。
+   *   - `"indices"`: Serializes arrays as indexed keys, e.g., `array[0]=1&array[1]=2`.
+   *   - `"indices"`：将数组序列化为带有索引的键值对，例如，`array[0]=1&array[1]=2`。
+   *   - `"brackets"`: Serializes arrays as bracketed keys, e.g., `array[]=1&array[]=2`.
+   *   - `"brackets"`：将数组序列化为带有方括号的键值对，例如，`array[]=1&array[]=2`。
+   *   - `"repeat"`: Serializes arrays as repeated keys, e.g., `array=1&array=2`.
+   *   - `"repeat"`：将数组序列化为重复的键值对，例如，`array=1&array=2`。
+   *   - `"comma"`: Serializes arrays as comma-separated values, e.g., `array=1,2`.
+   *   - `"comma"`：将数组序列化为逗号分隔的字符串，例如，`array=1,2`。
+   *   - `undefined`: Uses the default array format of `qs.stringify`.
+   *   - `undefined`：使用 `qs.stringify` 的默认数组格式。
    *
    * @property {ResponseInterceptor} [responseInterceptor] - Interceptor for processing the response.
    * @property {ResponseInterceptor} [responseInterceptor] - 处理响应的拦截器。
@@ -1038,7 +1189,7 @@ class JFetch {
    * @param {D} [data] - request parameter.
    * @param {D} [data] - 请求参数。
    *
-   * @param {Omit<JFetchOptions, 'baseURL' | 'data'>} [options]
+   * @param {JFetchRequestWithDataOptions} [options]
    * @extends [RequestInit](https://developer.mozilla.org/en-US/docs/Web/API/RequestInit)
    *
    * @property {number} [timeout] - Timeout duration in milliseconds for the request.
@@ -1052,6 +1203,20 @@ class JFetch {
    *
    * @property {<T>(chunk: T) => void} [streamCallback] - Callback function for handling stream chunks.
    * @property {<T>(chunk: T) => void} [streamCallback] - 处理流块的回调函数。
+   *
+   * @property {"indices" | "brackets" | "repeat" | "comma" | undefined} [qsArrayFormat]
+   * - Specifies the array format to use when serializing array parameters with `qs.stringify`, default value is `"repeat"`.
+   * - 指定在使用 `qs.stringify` 序列化数组参数时使用的数组格式, 默认值是`"repeat"`。
+   *   - `"indices"`: Serializes arrays as indexed keys, e.g., `array[0]=1&array[1]=2`.
+   *   - `"indices"`：将数组序列化为带有索引的键值对，例如，`array[0]=1&array[1]=2`。
+   *   - `"brackets"`: Serializes arrays as bracketed keys, e.g., `array[]=1&array[]=2`.
+   *   - `"brackets"`：将数组序列化为带有方括号的键值对，例如，`array[]=1&array[]=2`。
+   *   - `"repeat"`: Serializes arrays as repeated keys, e.g., `array=1&array=2`.
+   *   - `"repeat"`：将数组序列化为重复的键值对，例如，`array=1&array=2`。
+   *   - `"comma"`: Serializes arrays as comma-separated values, e.g., `array=1,2`.
+   *   - `"comma"`：将数组序列化为逗号分隔的字符串，例如，`array=1,2`。
+   *   - `undefined`: Uses the default array format of `qs.stringify`.
+   *   - `undefined`：使用 `qs.stringify` 的默认数组格式。
    *
    * @property {ResponseInterceptor} [responseInterceptor] - Interceptor for processing the response.
    * @property {ResponseInterceptor} [responseInterceptor] - 处理响应的拦截器。
@@ -1098,7 +1263,7 @@ class JFetch {
    * @param {string} url - The URL to which the request is sent.
    * @param {string} url - 发送请求的 URL。
    *
-   * @param {Omit<JFetchOptions, 'baseURL' | 'data'>} [options]
+   * @param {JFetchRequestWithDataOptions} [options]
    * @extends [RequestInit](https://developer.mozilla.org/en-US/docs/Web/API/RequestInit)
    *
    * @property {number} [timeout] - Timeout duration in milliseconds for the request.
@@ -1113,6 +1278,20 @@ class JFetch {
    *
    * @property {<T>(chunk: T) => void} [streamCallback] - Callback function for handling stream chunks.
    * @property {<T>(chunk: T) => void} [streamCallback] - 处理流块的回调函数。
+   *
+   * @property {"indices" | "brackets" | "repeat" | "comma" | undefined} [qsArrayFormat]
+   * - Specifies the array format to use when serializing array parameters with `qs.stringify`, default value is `"repeat"`.
+   * - 指定在使用 `qs.stringify` 序列化数组参数时使用的数组格式, 默认值是`"repeat"`。
+   *   - `"indices"`: Serializes arrays as indexed keys, e.g., `array[0]=1&array[1]=2`.
+   *   - `"indices"`：将数组序列化为带有索引的键值对，例如，`array[0]=1&array[1]=2`。
+   *   - `"brackets"`: Serializes arrays as bracketed keys, e.g., `array[]=1&array[]=2`.
+   *   - `"brackets"`：将数组序列化为带有方括号的键值对，例如，`array[]=1&array[]=2`。
+   *   - `"repeat"`: Serializes arrays as repeated keys, e.g., `array=1&array=2`.
+   *   - `"repeat"`：将数组序列化为重复的键值对，例如，`array=1&array=2`。
+   *   - `"comma"`: Serializes arrays as comma-separated values, e.g., `array=1,2`.
+   *   - `"comma"`：将数组序列化为逗号分隔的字符串，例如，`array=1,2`。
+   *   - `undefined`: Uses the default array format of `qs.stringify`.
+   *   - `undefined`：使用 `qs.stringify` 的默认数组格式。
    *
    * @property {ResponseInterceptor} [responseInterceptor] - Interceptor for processing the response.
    * @property {ResponseInterceptor} [responseInterceptor] - 处理响应的拦截器。
@@ -1164,7 +1343,7 @@ class JFetch {
    * @param {D} [data] - request parameter.
    * @param {D} [data] - 请求参数。
    *
-   * @param {Omit<JFetchOptions, 'baseURL' | 'data'>} [options]
+   * @param {JFetchRequestWithDataOptions} [options]
    * @extends [RequestInit](https://developer.mozilla.org/en-US/docs/Web/API/RequestInit)
    *
    * @property {number} [timeout] - Timeout duration in milliseconds for the request.
@@ -1178,6 +1357,20 @@ class JFetch {
    *
    * @property {<T>(chunk: T) => void} [streamCallback] - Callback function for handling stream chunks.
    * @property {<T>(chunk: T) => void} [streamCallback] - 处理流块的回调函数。
+   *
+   * @property {"indices" | "brackets" | "repeat" | "comma" | undefined} [qsArrayFormat]
+   * - Specifies the array format to use when serializing array parameters with `qs.stringify`, default value is `"repeat"`.
+   * - 指定在使用 `qs.stringify` 序列化数组参数时使用的数组格式, 默认值是`"repeat"`。
+   *   - `"indices"`: Serializes arrays as indexed keys, e.g., `array[0]=1&array[1]=2`.
+   *   - `"indices"`：将数组序列化为带有索引的键值对，例如，`array[0]=1&array[1]=2`。
+   *   - `"brackets"`: Serializes arrays as bracketed keys, e.g., `array[]=1&array[]=2`.
+   *   - `"brackets"`：将数组序列化为带有方括号的键值对，例如，`array[]=1&array[]=2`。
+   *   - `"repeat"`: Serializes arrays as repeated keys, e.g., `array=1&array=2`.
+   *   - `"repeat"`：将数组序列化为重复的键值对，例如，`array=1&array=2`。
+   *   - `"comma"`: Serializes arrays as comma-separated values, e.g., `array=1,2`.
+   *   - `"comma"`：将数组序列化为逗号分隔的字符串，例如，`array=1,2`。
+   *   - `undefined`: Uses the default array format of `qs.stringify`.
+   *   - `undefined`：使用 `qs.stringify` 的默认数组格式。
    *
    * @property {ResponseInterceptor} [responseInterceptor] - Interceptor for processing the response.
    * @property {ResponseInterceptor} [responseInterceptor] - 处理响应的拦截器。
@@ -1230,7 +1423,7 @@ class JFetch {
    * @param {P} [params] - The query parameters to include in the request.
    * @param {P} [params] - 请求中包含的查询参数。
    *
-   * @param {Omit<JFetchOptions, 'baseURL' | 'data'>} [options]
+   * @param {JFetchRequestWithDataOptions} [options]
    * @extends [RequestInit](https://developer.mozilla.org/en-US/docs/Web/API/RequestInit)
    *
    * @property {number} [timeout] - Timeout duration in milliseconds for the request.
@@ -1241,6 +1434,20 @@ class JFetch {
    *
    * @property {<T>(chunk: T) => void} [streamCallback] - Callback function for handling stream chunks.
    * @property {<T>(chunk: T) => void} [streamCallback] - 处理流块的回调函数。
+   *
+   * @property {"indices" | "brackets" | "repeat" | "comma" | undefined} [qsArrayFormat]
+   * - Specifies the array format to use when serializing array parameters with `qs.stringify`, default value is `"repeat"`.
+   * - 指定在使用 `qs.stringify` 序列化数组参数时使用的数组格式, 默认值是`"repeat"`。
+   *   - `"indices"`: Serializes arrays as indexed keys, e.g., `array[0]=1&array[1]=2`.
+   *   - `"indices"`：将数组序列化为带有索引的键值对，例如，`array[0]=1&array[1]=2`。
+   *   - `"brackets"`: Serializes arrays as bracketed keys, e.g., `array[]=1&array[]=2`.
+   *   - `"brackets"`：将数组序列化为带有方括号的键值对，例如，`array[]=1&array[]=2`。
+   *   - `"repeat"`: Serializes arrays as repeated keys, e.g., `array=1&array=2`.
+   *   - `"repeat"`：将数组序列化为重复的键值对，例如，`array=1&array=2`。
+   *   - `"comma"`: Serializes arrays as comma-separated values, e.g., `array=1,2`.
+   *   - `"comma"`：将数组序列化为逗号分隔的字符串，例如，`array=1,2`。
+   *   - `undefined`: Uses the default array format of `qs.stringify`.
+   *   - `undefined`：使用 `qs.stringify` 的默认数组格式。
    *
    * @property {ResponseInterceptor} [responseInterceptor] - Interceptor for processing the response.
    * @property {ResponseInterceptor} [responseInterceptor] - 处理响应的拦截器。
@@ -1293,7 +1500,7 @@ class JFetch {
    * @param {P} [params] - The query parameters to include in the request.
    * @param {P} [params] - 请求中包含的查询参数。
    *
-   * @param {Omit<JFetchOptions, 'baseURL' | 'data'>} [options]
+   * @param {JFetchRequestWithDataOptions} [options]
    * @extends [RequestInit](https://developer.mozilla.org/en-US/docs/Web/API/RequestInit)
    *
    * @property {number} [timeout] - Timeout duration in milliseconds for the request.
@@ -1304,6 +1511,20 @@ class JFetch {
    *
    * @property {<T>(chunk: T) => void} [streamCallback] - Callback function for handling stream chunks.
    * @property {<T>(chunk: T) => void} [streamCallback] - 处理流块的回调函数。
+   *
+   * @property {"indices" | "brackets" | "repeat" | "comma" | undefined} [qsArrayFormat]
+   * - Specifies the array format to use when serializing array parameters with `qs.stringify`, default value is `"repeat"`.
+   * - 指定在使用 `qs.stringify` 序列化数组参数时使用的数组格式, 默认值是`"repeat"`。
+   *   - `"indices"`: Serializes arrays as indexed keys, e.g., `array[0]=1&array[1]=2`.
+   *   - `"indices"`：将数组序列化为带有索引的键值对，例如，`array[0]=1&array[1]=2`。
+   *   - `"brackets"`: Serializes arrays as bracketed keys, e.g., `array[]=1&array[]=2`.
+   *   - `"brackets"`：将数组序列化为带有方括号的键值对，例如，`array[]=1&array[]=2`。
+   *   - `"repeat"`: Serializes arrays as repeated keys, e.g., `array=1&array=2`.
+   *   - `"repeat"`：将数组序列化为重复的键值对，例如，`array=1&array=2`。
+   *   - `"comma"`: Serializes arrays as comma-separated values, e.g., `array=1,2`.
+   *   - `"comma"`：将数组序列化为逗号分隔的字符串，例如，`array=1,2`。
+   *   - `undefined`: Uses the default array format of `qs.stringify`.
+   *   - `undefined`：使用 `qs.stringify` 的默认数组格式。
    *
    * @property {ResponseInterceptor} [responseInterceptor] - Interceptor for processing the response.
    * @property {ResponseInterceptor} [responseInterceptor] - 处理响应的拦截器。

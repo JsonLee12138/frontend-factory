@@ -1,3 +1,5 @@
+import QueryString from "qs";
+
 export type Interceptor<T = any> = (config: T) => T | Promise<T>;
 export interface InterceptorManagerInstance<T = any> {
   use(interceptor: Interceptor<T>): void;
@@ -20,21 +22,28 @@ export interface JFetchOptions extends RequestInit {
   responseInterceptor?: ResponseInterceptor;
   requestInterceptor?: RequestInterceptor;
   errorInterceptor?: ErrorInterceptor;
+  qsArrayFormat?: QueryString.IStringifyOptions['arrayFormat']
 }
 
 export interface JFetchError {
-  code: number;
+  code: number | string;
   message: string;
   url: string;
   requestHeaders: Headers;
   responseHeaders: Headers;
 }
 
+export type JFetchRequestOptions = Omit<JFetchOptions, 'baseURL'>;
+
+export type JFetchRequestWithParamsOptions = Omit<JFetchOptions, 'baseURL' | 'params' | 'data'>
+
+export type JFetchRequestWithDataOptions = Omit<JFetchOptions, 'baseURL' | 'data'>
+
 // export interface JFetchAbortablePromise<T> extends Promise<T>{
 //   abort: () => void;
 // }
 
-export interface JFetchAbortablePromise<T> {
+export interface JFetchAbortablePromise<T = any> {
   abort: () => void;
   then<TResult1 = T, TResult2 = never>(
     onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null,

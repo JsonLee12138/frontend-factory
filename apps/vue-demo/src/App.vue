@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import HelloWorld from './components/HelloWorld.vue';
-import JFetch, { get, request } from 'jsonlee-fetch/src';
+import JFetch, { get, request } from 'jsonlee-fetch';
 const testUrl = 'https://jsonplaceholder.typicode.com/todos/1';
 
 const req = new JFetch({
@@ -17,11 +17,14 @@ const req = new JFetch({
 //   config.url = 'todos/2'
 //   return config;
 // })
-const controller = req.get('/place/text', {
-  key: 'a512f63f8f2ab662a21bcc052da3ca30',
+const genParams = (params = {}) => {
+  return { ...params, key: 'a512f63f8f2ab662a21bcc052da3ca30' };
+};
+const params = {
   keywords: '成都',
   offset: 10,
-});
+};
+const controller = req.get('/place/text', genParams(params));
 // controller.abort();
 // const controller = JFetch.request(testUrl)
 // const controller = get(testUrl)
