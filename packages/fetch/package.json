@@ -1,6 +1,6 @@
 {
   "name": "jsonlee-fetch",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "JFetch is an HTTP request library based on fetch that provides a similar experience to axios.",
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",

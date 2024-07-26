@@ -4,7 +4,7 @@ export interface InterceptorManagerInstance<T = any> {
   run(config: T): Promise<T>;
 }
 
-export type RequestInterceptor = InterceptorManagerInstance<JFetchOptions & { url: string; }>;
+export type RequestInterceptor = InterceptorManagerInstance<Omit<JFetchOptions, 'headers'> & { url: string; headers: Headers; }>;
 
 export type ResponseInterceptor<T = any> = InterceptorManagerInstance<JFetchAbortablePromise<T>>;
 

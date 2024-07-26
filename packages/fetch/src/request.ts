@@ -134,7 +134,7 @@ class AbortablePromise<T> implements JFetchAbortablePromise<T> {
  * @property {Headers} responseHeaders - 响应头。
  */
 export function request<T = any>(url: string, { headers: _headers, timeout = 3000, isStream = false, streamCallback = () => { }, method = Method.GET, params, data, responseInterceptor, requestInterceptor, errorInterceptor,mode = 'cors', ...options }: Omit<JFetchOptions, 'baseURL'> = {}): JFetchAbortablePromise<T> {
-  const headers = mergeHeaders(baseHeaders, _headers);
+  let headers = mergeHeaders(baseHeaders, _headers);
   const controller = new AbortController();
   const signal = controller.signal;
   let timeoutFlag: boolean = false;
@@ -163,6 +163,7 @@ export function request<T = any>(url: string, { headers: _headers, timeout = 300
       url = _u;
       params = _p;
       options = _op;
+      headers = _h;
     }
     if (data) {
       if (withBodyArr.includes(method.toUpperCase() as Method)) {
@@ -1344,7 +1345,7 @@ class JFetch {
    * Request interceptor manager.
    * 请求拦截器管理器。
    */
-  requestInterceptor = new InterceptorManager<JFetchOptions & { url: string; }>();
+  requestInterceptor = new InterceptorManager<JFetchOptions & { url: string; headers: Headers; }>();
 
   /**
    * Response interceptor manager.
