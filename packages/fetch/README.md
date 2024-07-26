@@ -1,5 +1,5 @@
 ## JFetch文档
-[English Documents](#)
+[English Documents](https://github.com/JsonLee12138/frontend-factory/blob/main/packages/fetch/README.en.md)
 
 ### 介绍
 JFetch是一个基于`fetch`的HTTP请求库，提供了类似于`axios`的使用体验。它不仅支持常见的HTTP请求方法，还增加了流处理和更简洁的请求中止方法。
@@ -132,7 +132,7 @@ jfetch.abortAll();
 
 ### 拦截器
 JFetch提供了请求和响应拦截器，可以在请求发送前或响应到达后进行处理。
-```javascript
+```typescript
 jfetch.requestInterceptor.use(async (config) => {
   // 在请求发送前做一些处理
   return config;
@@ -140,6 +140,11 @@ jfetch.requestInterceptor.use(async (config) => {
 
 jfetch.responseInterceptor.use(async (response) => {
   // 在响应到达后做一些处理
+  return response;
+});
+
+jfetch.errorInterceptor.use(async (error: JFetchError) => {
+  // 在请求错误做一些处理
   return response;
 });
 ```

@@ -1,7 +1,9 @@
 {
   "compilerOptions": {
+    "importHelpers": true,
     "target": "ES5",
     "module": "ESNext",
+    "moduleResolution": "Node",
     "declaration": true,
     "declarationDir": "./dist/types",
     "outDir": "./dist",

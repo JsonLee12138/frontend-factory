@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import HelloWorld from './components/HelloWorld.vue'
-import JFetch, { get, request } from 'jsonlee-fetch/src/request';
+import JFetch, { get, request } from 'jsonlee-fetch';
 const testUrl = "https://jsonplaceholder.typicode.com/todos/1";
 
 const req = new JFetch({
@@ -9,17 +9,18 @@ const req = new JFetch({
     "Content-Type": "application/json",
   },
 });
-req.responseInterceptor.use((res)=> {
-  console.log(res, 'interceptor');
-  return {a: res}
-})
+// req.responseInterceptor.use((res)=> {
+//   console.log(res, 'interceptor');
+//   return {a: res}
+// })
 // req.requestInterceptor.use((config)=> {
 //   config.url = 'todos/2'
 //   return config;
 // })
 const controller = req.get('/todos/1');
+// controller.abort();
 // const controller = JFetch.request(testUrl)
-// const controller = JFetch.get(testUrl)
+// const controller = get(testUrl)
 console.log(controller);
 controller.then(res=> {
   console.log(res);

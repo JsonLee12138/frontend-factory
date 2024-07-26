@@ -1,5 +1,5 @@
 ## JFetch Documentation
-[中文文档](#)
+[中文文档](https://github.com/JsonLee12138/frontend-factory/blob/main/packages/fetch/README.md)
 
 ### Introduction
 JFetch is an HTTP request library based on `fetch` that provides a similar experience to `axios`. It not only supports common HTTP request methods but also adds stream handling and a more concise request aborting method.
@@ -35,6 +35,7 @@ import JFetch, { request, get, post, put, del, patch, head, options } from 'json
  * @param {string} [baseURL] Base URL for the request.
  * @param {ResponseInterceptor} [responseInterceptor] Interceptor for processing the response.
  * @param {RequestInterceptor} [requestInterceptor] Interceptor for processing the request.
+ * @param {ErrorInterceptor} [errorInterceptor] Interceptor for processing the request errors.
  */
 ```
 
@@ -132,7 +133,7 @@ jfetch.abortAll();
 
 ### Interceptors
 JFetch provides request and response interceptors, allowing you to process the request before sending it or the response after it arrives.
-```javascript
+```typescript
 jfetch.requestInterceptor.use(async (config) => {
   // Process before the request is sent
   return config;
@@ -140,6 +141,11 @@ jfetch.requestInterceptor.use(async (config) => {
 
 jfetch.responseInterceptor.use(async (response) => {
   // Process after the response arrives
+  return response;
+});
+
+jfetch.errorInterceptor.use(async (error: JFetchError) => {
+  // Process on request error
   return response;
 });
 ```

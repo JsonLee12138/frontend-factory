@@ -2,6 +2,7 @@ import qs from "qs";
 import { ContentType, Method, StatusCode } from "./enums";
 import { JFetchAbortablePromise, JFetchError, JFetchOptions } from "./types";
 import InterceptorManager from "./interceptor";
+import { __extends } from 'tslib';
 
 const baseHeaders = {
   'Content-Type': ContentType.JSON,
@@ -11,8 +12,10 @@ const withBodyArr = [Method.POST, Method.PUT, Method.PATCH];
 const withoutBodyArr = [Method.GET, Method.HEAD, Method.OPTIONS, Method.DELETE];
 const withParamsArr = [Method.GET, Method.HEAD, Method.OPTIONS];
 
-class AbortablePromise<T> extends Promise<T> implements JFetchAbortablePromise<T> {
+class AbortablePromise<T> implements JFetchAbortablePromise<T> {
+  private promise: Promise<T>;
   private abortController: AbortController;
+
   constructor(
     executor: (
       resolve: (value: T | PromiseLike<T>) => void,
@@ -20,9 +23,12 @@ class AbortablePromise<T> extends Promise<T> implements JFetchAbortablePromise<T
     ) => void,
     abortController: AbortController
   ) {
-    super(executor);
     this.abortController = abortController;
+    this.promise = new Promise<T>(executor);
     this.abort = this.abort.bind(this);
+    this.then = this.then.bind(this);
+    this.catch = this.catch.bind(this);
+    this.finally = this.finally.bind(this);
   }
   /**
    * Aborts the fetch request.
@@ -30,8 +36,47 @@ class AbortablePromise<T> extends Promise<T> implements JFetchAbortablePromise<T
    */
   public abort() {
     this.abortController.abort();
-  };
+  }
+
+  public then<TResult1 = T, TResult2 = never>(
+    onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null,
+    onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null
+  ): Promise<TResult1 | TResult2> {
+    return this.promise.then(onfulfilled, onrejected);
+  }
+
+  public catch<TResult = never>(
+    onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null
+  ): Promise<T | TResult> {
+    return this.promise.catch(onrejected);
+  }
+
+  public finally(onfinally?: (() => void) | undefined | null): Promise<T> {
+    return this.promise.finally(onfinally);
+  }
 }
+
+// class AbortablePromise<T> extends Promise<T> implements JFetchAbortablePromise<T> {
+//   private abortController: AbortController;
+//   constructor(
+//     executor: (
+//       resolve: (value: T | PromiseLike<T>) => void,
+//       reject: (reason?: any) => void
+//     ) => void,
+//     abortController: AbortController
+//   ) {
+//     super(executor);
+//     this.abortController = abortController;
+//     this.abort = this.abort.bind(this);
+//   }
+//   /**
+//    * Aborts the fetch request.
+//    * 中止 fetch 请求。
+//    */
+//   public abort() {
+//     this.abortController.abort();
+//   };
+// }
 /**
  * Configuration options for JFetch requests.
  * JFetch 请求的配置选项。
@@ -66,6 +111,9 @@ class AbortablePromise<T> extends Promise<T> implements JFetchAbortablePromise<T
  * @property {RequestInterceptor} [requestInterceptor] - Interceptor for processing the request.
  * @property {RequestInterceptor} [requestInterceptor] - 处理请求的拦截器。
  *
+ * @property {ErrorInterceptor} [errorInterceptor] - Interceptor for processing the request errors.
+ * @property {ErrorInterceptor} [errorInterceptor] - 处理请求错误的拦截器。
+ *
  * Error object
  * 错误对象。
  * @interface JFetchError
@@ -85,7 +133,7 @@ class AbortablePromise<T> extends Promise<T> implements JFetchAbortablePromise<T
  * @property {Headers} responseHeaders - The response headers.
  * @property {Headers} responseHeaders - 响应头。
  */
-export function request<T = any>(url: string, { headers: _headers, timeout = 3000, isStream = false, streamCallback = () => { }, method = Method.GET, params, data, responseInterceptor, requestInterceptor, mode = 'cors', ...options }: Omit<JFetchOptions, 'baseURL'> = {}): JFetchAbortablePromise<T> {
+export function request<T = any>(url: string, { headers: _headers, timeout = 3000, isStream = false, streamCallback = () => { }, method = Method.GET, params, data, responseInterceptor, requestInterceptor, errorInterceptor,mode = 'cors', ...options }: Omit<JFetchOptions, 'baseURL'> = {}): JFetchAbortablePromise<T> {
   const headers = mergeHeaders(baseHeaders, _headers);
   const controller = new AbortController();
   const signal = controller.signal;
@@ -162,40 +210,47 @@ export function request<T = any>(url: string, { headers: _headers, timeout = 300
         }
         resolve(await dataToJson(res));
       }
-      return reject(genError({
+      throw genError({
         code: res.status,
         message: res.statusText,
         requestHeaders: headers,
         responseHeaders: res.headers,
         url,
-      }));
+      });
     } catch (err: unknown) {
       const error = err as Error;
+      let errorTemp: JFetchError;
       if (error.name === 'AbortError') {
         if (timeoutFlag) {
-          return reject(genError({
+          errorTemp = genError({
             code: StatusCode.TIME_OUT,
             message: `Timeout of ${timeout}ms exceeded`,
             requestHeaders: headers,
             responseHeaders: new Headers(),
             url,
-          }));
+          });
+        }else{
+          errorTemp = genError({
+            code: StatusCode.ABORTED,
+            message: 'Request aborted',
+            requestHeaders: headers,
+            responseHeaders: new Headers(),
+            url,
+          });
         }
-        return reject(genError({
-          code: StatusCode.ABORTED,
-          message: 'Request aborted',
+      }else{
+        errorTemp = genError({
+          code: StatusCode.NETWORK_ERROR,
+          message: error.message || 'Network error or other problem',
           requestHeaders: headers,
           responseHeaders: new Headers(),
           url,
-        }));
+        });
       }
-      return reject(genError({
-        code: StatusCode.NETWORK_ERROR,
-        message: error.message || 'Network error or other problem',
-        requestHeaders: headers,
-        responseHeaders: new Headers(),
-        url,
-      }));
+      if(errorInterceptor){
+        return reject(await errorInterceptor.run(errorTemp));
+      }
+      return reject(errorTemp);
     } finally {
       if (timeoutInstance) {
         clearTimeout(timeoutInstance);
@@ -236,6 +291,9 @@ export function request<T = any>(url: string, { headers: _headers, timeout = 300
  *
  * @property {RequestInterceptor} [requestInterceptor] - Interceptor for processing the request.
  * @property {RequestInterceptor} [requestInterceptor] - 处理请求的拦截器。
+ *
+ * @property {ErrorInterceptor} [errorInterceptor] - Interceptor for processing the request errors.
+ * @property {ErrorInterceptor} [errorInterceptor] - 处理请求错误的拦截器。
  *
  * Error object
  * 错误对象。
@@ -301,6 +359,9 @@ export function get<T = any, P = any>(url: string, params: P = {} as P, options:
  * @property {RequestInterceptor} [requestInterceptor] - Interceptor for processing the request.
  * @property {RequestInterceptor} [requestInterceptor] - 处理请求的拦截器。
  *
+ * @property {ErrorInterceptor} [errorInterceptor] - Interceptor for processing the request errors.
+ * @property {ErrorInterceptor} [errorInterceptor] - 处理请求错误的拦截器。
+ *
  * Error object
  * 错误对象。
  * @interface JFetchError
@@ -364,6 +425,9 @@ export function post<T = any, D = any>(url: string, data: D = {} as D, options: 
  * @property {RequestInterceptor} [requestInterceptor] - Interceptor for processing the request.
  * @property {RequestInterceptor} [requestInterceptor] - 处理请求的拦截器。
  *
+ * @property {ErrorInterceptor} [errorInterceptor] - Interceptor for processing the request errors.
+ * @property {ErrorInterceptor} [errorInterceptor] - 处理请求错误的拦截器。
+ *
  * Error object
  * 错误对象。
  * @interface JFetchError
@@ -421,6 +485,9 @@ export function put<T = any, D = any>(url: string, data: D = {} as D, options: O
  *
  * @property {RequestInterceptor} [requestInterceptor] - Interceptor for processing the request.
  * @property {RequestInterceptor} [requestInterceptor] - 处理请求的拦截器。
+ *
+ * @property {ErrorInterceptor} [errorInterceptor] - Interceptor for processing the request errors.
+ * @property {ErrorInterceptor} [errorInterceptor] - 处理请求错误的拦截器。
  *
  * Error object
  * 错误对象。
@@ -484,6 +551,9 @@ export function del<T = any>(url: string, options: Omit<JFetchOptions, 'baseURL'
  * @property {RequestInterceptor} [requestInterceptor] - Interceptor for processing the request.
  * @property {RequestInterceptor} [requestInterceptor] - 处理请求的拦截器。
  *
+ * @property {ErrorInterceptor} [errorInterceptor] - Interceptor for processing the request errors.
+ * @property {ErrorInterceptor} [errorInterceptor] - 处理请求错误的拦截器。
+ *
  * Error object
  * 错误对象。
  * @interface JFetchError
@@ -544,6 +614,9 @@ export function patch<T = any, D = any>(url: string, data: D = {} as D, options:
  * @property {RequestInterceptor} [requestInterceptor] - Interceptor for processing the request.
  * @property {RequestInterceptor} [requestInterceptor] - 处理请求的拦截器。
  *
+ * @property {ErrorInterceptor} [errorInterceptor] - Interceptor for processing the request errors.
+ * @property {ErrorInterceptor} [errorInterceptor] - 处理请求错误的拦截器。
+ *
  * Error object
  * 错误对象。
  * @interface JFetchError
@@ -603,6 +676,9 @@ export function head<T = any, P = any>(url: string, params: P = {} as P, options
  *
  * @property {RequestInterceptor} [requestInterceptor] - Interceptor for processing the request.
  * @property {RequestInterceptor} [requestInterceptor] - 处理请求的拦截器。
+ *
+ * @property {ErrorInterceptor} [errorInterceptor] - Interceptor for processing the request errors.
+ * @property {ErrorInterceptor} [errorInterceptor] - 处理请求错误的拦截器。
  *
  * Error object
  * 错误对象。
@@ -708,7 +784,7 @@ class JFetch {
    * Constructs an instance of JFetch.
    * 构造 JFetch 的实例。
    *
-   * @param {Omit<JFetchOptions, 'params' | 'data' | 'isStream' | 'streamCallback' | 'responseInterceptor' | 'requestInterceptor'>} [options]
+   * @param {Omit<JFetchOptions, 'params' | 'data' | 'isStream' | 'streamCallback' | 'responseInterceptor' | 'requestInterceptor' | 'errorInterceptor'>} [options]
    * @extends [RequestInit](https://developer.mozilla.org/en-US/docs/Web/API/RequestInit)
    *
    * @property {number} [timeout] - Timeout duration in milliseconds for the request.
@@ -717,7 +793,7 @@ class JFetch {
    * @property {string} [baseURL] - Base URL for the request.
    * @property {string} [baseURL] - 请求的基础 URL。
    */
-  constructor({ baseURL = '', headers = {}, ...options }: Omit<JFetchOptions, 'params' | 'data' | 'isStream' | 'streamCallback' | 'responseInterceptor' | 'requestInterceptor'> = {}) {
+  constructor({ baseURL = '', headers = {}, ...options }: Omit<JFetchOptions, 'params' | 'data' | 'isStream' | 'streamCallback' | 'responseInterceptor' | 'requestInterceptor' | 'errorInterceptor'> = {}) {
     this.baseURL = baseURL;
     this.headers = headers;
     this.config = options;
@@ -775,6 +851,9 @@ class JFetch {
    * @property {RequestInterceptor} [requestInterceptor] - Interceptor for processing the request.
    * @property {RequestInterceptor} [requestInterceptor] - 处理请求的拦截器。
    *
+   * @property {ErrorInterceptor} [errorInterceptor] - Interceptor for processing the request errors.
+   * @property {ErrorInterceptor} [errorInterceptor] - 处理请求错误的拦截器。
+   *
    * Error object
    * 错误对象。
    * @interface JFetchError
@@ -807,6 +886,7 @@ class JFetch {
       headers: _headers,
       requestInterceptor: this.requestInterceptor,
       responseInterceptor: this.responseInterceptor,
+      errorInterceptor: this.errorInterceptor,
     })
     this.requestQueue.push(controller);
     return controller;
@@ -844,6 +924,9 @@ class JFetch {
    *
    * @property {RequestInterceptor} [requestInterceptor] - Interceptor for processing the request.
    * @property {RequestInterceptor} [requestInterceptor] - 处理请求的拦截器。
+   *
+   * @property {ErrorInterceptor} [errorInterceptor] - Interceptor for processing the request errors.
+ * @property {ErrorInterceptor} [errorInterceptor] - 处理请求错误的拦截器。
    *
    * Error object
    * 错误对象。
@@ -909,6 +992,9 @@ class JFetch {
    * @property {RequestInterceptor} [requestInterceptor] - Interceptor for processing the request.
    * @property {RequestInterceptor} [requestInterceptor] - 处理请求的拦截器。
    *
+   * @property {ErrorInterceptor} [errorInterceptor] - Interceptor for processing the request errors.
+ * @property {ErrorInterceptor} [errorInterceptor] - 处理请求错误的拦截器。
+   *
    * Error object
    * 错误对象。
    * @interface JFetchError
@@ -972,6 +1058,9 @@ class JFetch {
    * @property {RequestInterceptor} [requestInterceptor] - Interceptor for processing the request.
    * @property {RequestInterceptor} [requestInterceptor] - 处理请求的拦截器。
    *
+   * @property {ErrorInterceptor} [errorInterceptor] - Interceptor for processing the request errors.
+ * @property {ErrorInterceptor} [errorInterceptor] - 处理请求错误的拦截器。
+   *
    * Error object
    * 错误对象。
    * @interface JFetchError
@@ -1029,6 +1118,9 @@ class JFetch {
    *
    * @property {RequestInterceptor} [requestInterceptor] - Interceptor for processing the request.
    * @property {RequestInterceptor} [requestInterceptor] - 处理请求的拦截器。
+   *
+   * @property {ErrorInterceptor} [errorInterceptor] - Interceptor for processing the request errors.
+ * @property {ErrorInterceptor} [errorInterceptor] - 处理请求错误的拦截器。
    *
    * Error object
    * 错误对象。
@@ -1092,6 +1184,9 @@ class JFetch {
    * @property {RequestInterceptor} [requestInterceptor] - Interceptor for processing the request.
    * @property {RequestInterceptor} [requestInterceptor] - 处理请求的拦截器。
    *
+   * @property {ErrorInterceptor} [errorInterceptor] - Interceptor for processing the request errors.
+ * @property {ErrorInterceptor} [errorInterceptor] - 处理请求错误的拦截器。
+   *
    * Error object
    * 错误对象。
    * @interface JFetchError
@@ -1151,6 +1246,9 @@ class JFetch {
    *
    * @property {RequestInterceptor} [requestInterceptor] - Interceptor for processing the request.
    * @property {RequestInterceptor} [requestInterceptor] - 处理请求的拦截器。
+   *
+   * @property {ErrorInterceptor} [errorInterceptor] - Interceptor for processing the request errors.
+ * @property {ErrorInterceptor} [errorInterceptor] - 处理请求错误的拦截器。
    *
    * Error object
    * 错误对象。
@@ -1212,6 +1310,9 @@ class JFetch {
    * @property {RequestInterceptor} [requestInterceptor] - Interceptor for processing the request.
    * @property {RequestInterceptor} [requestInterceptor] - 处理请求的拦截器。
    *
+   * @property {ErrorInterceptor} [errorInterceptor] - Interceptor for processing the request errors.
+   * @property {ErrorInterceptor} [errorInterceptor] - 处理请求错误的拦截器。
+   *
    * Error object
    * 错误对象。
    * @interface JFetchError
@@ -1250,6 +1351,12 @@ class JFetch {
    * 响应拦截器管理器。
    */
   responseInterceptor = new InterceptorManager<any>();
+
+  /**
+   * Error interceptor manager.
+   * 错误拦截器管理器。
+   */
+  errorInterceptor = new InterceptorManager<JFetchError>();
 
   /**
    * Abort all requests.
