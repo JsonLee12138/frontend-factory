@@ -902,6 +902,20 @@ class JFetch {
    *
    * @property {string} [baseURL] - Base URL for the request.
    * @property {string} [baseURL] - 请求的基础 URL。
+   *
+   * @property {"indices" | "brackets" | "repeat" | "comma" | undefined} [qsArrayFormat]
+   * - Specifies the array format to use when serializing array parameters with `qs.stringify`, default value is `"repeat"`.
+   * - 指定在使用 `qs.stringify` 序列化数组参数时使用的数组格式, 默认值是`"repeat"`。
+   *   - `"indices"`: Serializes arrays as indexed keys, e.g., `array[0]=1&array[1]=2`.
+   *   - `"indices"`：将数组序列化为带有索引的键值对，例如，`array[0]=1&array[1]=2`。
+   *   - `"brackets"`: Serializes arrays as bracketed keys, e.g., `array[]=1&array[]=2`.
+   *   - `"brackets"`：将数组序列化为带有方括号的键值对，例如，`array[]=1&array[]=2`。
+   *   - `"repeat"`: Serializes arrays as repeated keys, e.g., `array=1&array=2`.
+   *   - `"repeat"`：将数组序列化为重复的键值对，例如，`array=1&array=2`。
+   *   - `"comma"`: Serializes arrays as comma-separated values, e.g., `array=1,2`.
+   *   - `"comma"`：将数组序列化为逗号分隔的字符串，例如，`array=1,2`。
+   *   - `undefined`: Uses the default array format of `qs.stringify`.
+   *   - `undefined`：使用 `qs.stringify` 的默认数组格式。
    */
   constructor({ baseURL = '', headers = {}, ...options }: Omit<JFetchOptions, 'params' | 'data' | 'isStream' | 'streamCallback' | 'responseInterceptor' | 'requestInterceptor' | 'errorInterceptor'> = {}) {
     this.baseURL = baseURL;

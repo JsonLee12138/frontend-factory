@@ -33,6 +33,14 @@ import JFetch, { request, get, post, put, del, patch, head, options } from 'json
  * @param {boolean} [isStream] Whether the response should be treated as a stream.
  * @param {<T>(chunk: T) => void} [streamCallback] Callback function for handling stream chunks.
  * @param {string} [baseURL] Base URL for the request.
+ * @property {"indices" | "brackets" | "repeat" | "comma" | undefined} [qsArrayFormat]
+ * - Specifies the array format to use when serializing array parameters with `qs.stringify`, default value is `"repeat"`.
+ *   - `"indices"`: Serializes arrays as indexed keys, e.g., `array[0]=1&array[1]=2`.
+ *   - `"brackets"`: Serializes arrays as bracketed keys, e.g., `array[]=1&array[]=2`.
+ *   - `"repeat"`: Serializes arrays as repeated keys, e.g., `array=1&array=2`.
+ *   - `"comma"`: Serializes arrays as comma-separated values, e.g., `array=1,2`.
+ *   - `undefined`: Uses the default array format of `qs.stringify`.
+ *   - `undefined`：使用 `qs.stringify` 的默认数组格式。
  * @param {ResponseInterceptor} [responseInterceptor] Interceptor for processing the response.
  * @param {RequestInterceptor} [requestInterceptor] Interceptor for processing the request.
  * @param {ErrorInterceptor} [errorInterceptor] Interceptor for processing the request errors.
