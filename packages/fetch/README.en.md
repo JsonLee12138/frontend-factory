@@ -156,4 +156,8 @@ jfetch.errorInterceptor.use(async (error: JFetchError) => {
   // Process on request error
   return response;
 });
+
+jfetch.finallyInterceptor.use(async (controller: AbortController) => {
+  // Processing request completed
+})
 ```

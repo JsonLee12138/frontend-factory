@@ -155,4 +155,8 @@ jfetch.errorInterceptor.use(async (error: JFetchError) => {
   // 在请求错误做一些处理
   return response;
 });
+
+jfetch.finallyInterceptor.use(async (controller: AbortController) => {
+  // 处理请求完成
+})
 ```

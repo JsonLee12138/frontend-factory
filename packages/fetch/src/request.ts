@@ -29,6 +29,7 @@ class AbortablePromise<T> implements JFetchAbortablePromise<T> {
     this.then = this.then.bind(this);
     this.catch = this.catch.bind(this);
     this.finally = this.finally.bind(this);
+    this.getController = this.getController.bind(this);
   }
   /**
    * Aborts the fetch request.
@@ -36,6 +37,9 @@ class AbortablePromise<T> implements JFetchAbortablePromise<T> {
    */
   public abort() {
     this.abortController.abort();
+  }
+  public getController(): AbortController {
+    return this.abortController;
   }
 
   public then<TResult1 = T, TResult2 = never>(
@@ -116,15 +120,6 @@ class AbortablePromise<T> implements JFetchAbortablePromise<T> {
  *   - `undefined`: Uses the default array format of `qs.stringify`.
  *   - `undefined`：使用 `qs.stringify` 的默认数组格式。
  *
- * @property {ResponseInterceptor} [responseInterceptor] - Interceptor for processing the response.
- * @property {ResponseInterceptor} [responseInterceptor] - 处理响应的拦截器。
- *
- * @property {RequestInterceptor} [requestInterceptor] - Interceptor for processing the request.
- * @property {RequestInterceptor} [requestInterceptor] - 处理请求的拦截器。
- *
- * @property {ErrorInterceptor} [errorInterceptor] - Interceptor for processing the request errors.
- * @property {ErrorInterceptor} [errorInterceptor] - 处理请求错误的拦截器。
- *
  * Error object
  * 错误对象。
  * @interface JFetchError
@@ -144,7 +139,7 @@ class AbortablePromise<T> implements JFetchAbortablePromise<T> {
  * @property {Headers} responseHeaders - The response headers.
  * @property {Headers} responseHeaders - 响应头。
  */
-export function request<T = any>(url: string, { headers: _headers, timeout = 3000, isStream = false, streamCallback = () => { }, method = Method.GET, params, data, responseInterceptor, requestInterceptor, errorInterceptor,mode = 'cors', qsArrayFormat = "repeat",...options }: JFetchRequestOptions = {}): JFetchAbortablePromise<T> {
+export function request<T = any>(url: string, { headers: _headers, timeout = 3000, isStream = false, streamCallback = () => { }, method = Method.GET, params, data, responseInterceptor, requestInterceptor, errorInterceptor, mode = 'cors', qsArrayFormat = "repeat", finallyInterceptor,...options }: JFetchRequestOptions = {}): JFetchAbortablePromise<T> {
   let headers = mergeHeaders(baseHeaders, _headers);
   const controller = new AbortController();
   const signal = controller.signal;
@@ -241,7 +236,7 @@ export function request<T = any>(url: string, { headers: _headers, timeout = 300
             responseHeaders: new Headers(),
             url,
           });
-        }else{
+        } else {
           errorTemp = genError({
             code: StatusCode.ABORTED,
             message: 'Request aborted',
@@ -250,20 +245,23 @@ export function request<T = any>(url: string, { headers: _headers, timeout = 300
             url,
           });
         }
-      }else{
+      } else {
         errorTemp = genError({
-          code: (err as {code: number | string}).code || StatusCode.NETWORK_ERROR,
+          code: (err as { code: number | string }).code || StatusCode.NETWORK_ERROR,
           message: error.message || 'Network error or other problem',
           requestHeaders: headers,
           responseHeaders: new Headers(),
           url,
         });
       }
-      if(errorInterceptor){
+      if (errorInterceptor) {
         return reject(await errorInterceptor.run(errorTemp));
       }
       return reject(errorTemp);
     } finally {
+      if (finallyInterceptor) {
+        finallyInterceptor.run(controller);
+      }
       if (timeoutInstance) {
         clearTimeout(timeoutInstance);
       }
@@ -311,15 +309,6 @@ export function request<T = any>(url: string, { headers: _headers, timeout = 300
  *   - `"comma"`：将数组序列化为逗号分隔的字符串，例如，`array=1,2`。
  *   - `undefined`: Uses the default array format of `qs.stringify`.
  *   - `undefined`：使用 `qs.stringify` 的默认数组格式。
- *
- * @property {ResponseInterceptor} [responseInterceptor] - Interceptor for processing the response.
- * @property {ResponseInterceptor} [responseInterceptor] - 处理响应的拦截器。
- *
- * @property {RequestInterceptor} [requestInterceptor] - Interceptor for processing the request.
- * @property {RequestInterceptor} [requestInterceptor] - 处理请求的拦截器。
- *
- * @property {ErrorInterceptor} [errorInterceptor] - Interceptor for processing the request errors.
- * @property {ErrorInterceptor} [errorInterceptor] - 处理请求错误的拦截器。
  *
  * Error object
  * 错误对象。
@@ -393,15 +382,6 @@ export function get<T = any, P = any>(url: string, params: P = {} as P, options:
  *   - `undefined`: Uses the default array format of `qs.stringify`.
  *   - `undefined`：使用 `qs.stringify` 的默认数组格式。
  *
- * @property {ResponseInterceptor} [responseInterceptor] - Interceptor for processing the response.
- * @property {ResponseInterceptor} [responseInterceptor] - 处理响应的拦截器。
- *
- * @property {RequestInterceptor} [requestInterceptor] - Interceptor for processing the request.
- * @property {RequestInterceptor} [requestInterceptor] - 处理请求的拦截器。
- *
- * @property {ErrorInterceptor} [errorInterceptor] - Interceptor for processing the request errors.
- * @property {ErrorInterceptor} [errorInterceptor] - 处理请求错误的拦截器。
- *
  * Error object
  * 错误对象。
  * @interface JFetchError
@@ -473,15 +453,6 @@ export function post<T = any, D = any>(url: string, data: D = {} as D, options: 
  *   - `undefined`: Uses the default array format of `qs.stringify`.
  *   - `undefined`：使用 `qs.stringify` 的默认数组格式。
  *
- * @property {ResponseInterceptor} [responseInterceptor] - Interceptor for processing the response.
- * @property {ResponseInterceptor} [responseInterceptor] - 处理响应的拦截器。
- *
- * @property {RequestInterceptor} [requestInterceptor] - Interceptor for processing the request.
- * @property {RequestInterceptor} [requestInterceptor] - 处理请求的拦截器。
- *
- * @property {ErrorInterceptor} [errorInterceptor] - Interceptor for processing the request errors.
- * @property {ErrorInterceptor} [errorInterceptor] - 处理请求错误的拦截器。
- *
  * Error object
  * 错误对象。
  * @interface JFetchError
@@ -547,15 +518,6 @@ export function put<T = any, D = any>(url: string, data: D = {} as D, options: J
  *   - `"comma"`：将数组序列化为逗号分隔的字符串，例如，`array=1,2`。
  *   - `undefined`: Uses the default array format of `qs.stringify`.
  *   - `undefined`：使用 `qs.stringify` 的默认数组格式。
- *
- * @property {ResponseInterceptor} [responseInterceptor] - Interceptor for processing the response.
- * @property {ResponseInterceptor} [responseInterceptor] - 处理响应的拦截器。
- *
- * @property {RequestInterceptor} [requestInterceptor] - Interceptor for processing the request.
- * @property {RequestInterceptor} [requestInterceptor] - 处理请求的拦截器。
- *
- * @property {ErrorInterceptor} [errorInterceptor] - Interceptor for processing the request errors.
- * @property {ErrorInterceptor} [errorInterceptor] - 处理请求错误的拦截器。
  *
  * Error object
  * 错误对象。
@@ -627,15 +589,6 @@ export function del<T = any>(url: string, options: JFetchRequestWithDataOptions 
  *   - `undefined`: Uses the default array format of `qs.stringify`.
  *   - `undefined`：使用 `qs.stringify` 的默认数组格式。
  *
- * @property {ResponseInterceptor} [responseInterceptor] - Interceptor for processing the response.
- * @property {ResponseInterceptor} [responseInterceptor] - 处理响应的拦截器。
- *
- * @property {RequestInterceptor} [requestInterceptor] - Interceptor for processing the request.
- * @property {RequestInterceptor} [requestInterceptor] - 处理请求的拦截器。
- *
- * @property {ErrorInterceptor} [errorInterceptor] - Interceptor for processing the request errors.
- * @property {ErrorInterceptor} [errorInterceptor] - 处理请求错误的拦截器。
- *
  * Error object
  * 错误对象。
  * @interface JFetchError
@@ -704,15 +657,6 @@ export function patch<T = any, D = any>(url: string, data: D = {} as D, options:
  *   - `undefined`: Uses the default array format of `qs.stringify`.
  *   - `undefined`：使用 `qs.stringify` 的默认数组格式。
  *
- * @property {ResponseInterceptor} [responseInterceptor] - Interceptor for processing the response.
- * @property {ResponseInterceptor} [responseInterceptor] - 处理响应的拦截器。
- *
- * @property {RequestInterceptor} [requestInterceptor] - Interceptor for processing the request.
- * @property {RequestInterceptor} [requestInterceptor] - 处理请求的拦截器。
- *
- * @property {ErrorInterceptor} [errorInterceptor] - Interceptor for processing the request errors.
- * @property {ErrorInterceptor} [errorInterceptor] - 处理请求错误的拦截器。
- *
  * Error object
  * 错误对象。
  * @interface JFetchError
@@ -780,15 +724,6 @@ export function head<T = any, P = any>(url: string, params: P = {} as P, options
  *   - `"comma"`：将数组序列化为逗号分隔的字符串，例如，`array=1,2`。
  *   - `undefined`: Uses the default array format of `qs.stringify`.
  *   - `undefined`：使用 `qs.stringify` 的默认数组格式。
- *
- * @property {ResponseInterceptor} [responseInterceptor] - Interceptor for processing the response.
- * @property {ResponseInterceptor} [responseInterceptor] - 处理响应的拦截器。
- *
- * @property {RequestInterceptor} [requestInterceptor] - Interceptor for processing the request.
- * @property {RequestInterceptor} [requestInterceptor] - 处理请求的拦截器。
- *
- * @property {ErrorInterceptor} [errorInterceptor] - Interceptor for processing the request errors.
- * @property {ErrorInterceptor} [errorInterceptor] - 处理请求错误的拦截器。
  *
  * Error object
  * 错误对象。
@@ -931,6 +866,10 @@ class JFetch {
     this.head = this.head.bind(this);
     this.options = this.options.bind(this);
     this.abortAll = this.abortAll.bind(this);
+    this.getQueue = this.getQueue.bind(this);
+    this.finallyInterceptor.use((_controller)=> {
+      this.requestQueue = this.requestQueue.filter((_c)=> _c.getController() !== _controller);
+    })
   }
   static request = request;
   static get = get;
@@ -1025,6 +964,7 @@ class JFetch {
       requestInterceptor: this.requestInterceptor,
       responseInterceptor: this.responseInterceptor,
       errorInterceptor: this.errorInterceptor,
+      finallyInterceptor: this.finallyInterceptor,
     })
     this.requestQueue.push(controller);
     return controller;
@@ -1232,15 +1172,6 @@ class JFetch {
    *   - `undefined`: Uses the default array format of `qs.stringify`.
    *   - `undefined`：使用 `qs.stringify` 的默认数组格式。
    *
-   * @property {ResponseInterceptor} [responseInterceptor] - Interceptor for processing the response.
-   * @property {ResponseInterceptor} [responseInterceptor] - 处理响应的拦截器。
-   *
-   * @property {RequestInterceptor} [requestInterceptor] - Interceptor for processing the request.
-   * @property {RequestInterceptor} [requestInterceptor] - 处理请求的拦截器。
-   *
-   * @property {ErrorInterceptor} [errorInterceptor] - Interceptor for processing the request errors.
- * @property {ErrorInterceptor} [errorInterceptor] - 处理请求错误的拦截器。
-   *
    * Error object
    * 错误对象。
    * @interface JFetchError
@@ -1306,15 +1237,6 @@ class JFetch {
    *   - `"comma"`：将数组序列化为逗号分隔的字符串，例如，`array=1,2`。
    *   - `undefined`: Uses the default array format of `qs.stringify`.
    *   - `undefined`：使用 `qs.stringify` 的默认数组格式。
-   *
-   * @property {ResponseInterceptor} [responseInterceptor] - Interceptor for processing the response.
-   * @property {ResponseInterceptor} [responseInterceptor] - 处理响应的拦截器。
-   *
-   * @property {RequestInterceptor} [requestInterceptor] - Interceptor for processing the request.
-   * @property {RequestInterceptor} [requestInterceptor] - 处理请求的拦截器。
-   *
-   * @property {ErrorInterceptor} [errorInterceptor] - Interceptor for processing the request errors.
- * @property {ErrorInterceptor} [errorInterceptor] - 处理请求错误的拦截器。
    *
    * Error object
    * 错误对象。
@@ -1386,15 +1308,6 @@ class JFetch {
    *   - `undefined`: Uses the default array format of `qs.stringify`.
    *   - `undefined`：使用 `qs.stringify` 的默认数组格式。
    *
-   * @property {ResponseInterceptor} [responseInterceptor] - Interceptor for processing the response.
-   * @property {ResponseInterceptor} [responseInterceptor] - 处理响应的拦截器。
-   *
-   * @property {RequestInterceptor} [requestInterceptor] - Interceptor for processing the request.
-   * @property {RequestInterceptor} [requestInterceptor] - 处理请求的拦截器。
-   *
-   * @property {ErrorInterceptor} [errorInterceptor] - Interceptor for processing the request errors.
- * @property {ErrorInterceptor} [errorInterceptor] - 处理请求错误的拦截器。
-   *
    * Error object
    * 错误对象。
    * @interface JFetchError
@@ -1462,15 +1375,6 @@ class JFetch {
    *   - `"comma"`：将数组序列化为逗号分隔的字符串，例如，`array=1,2`。
    *   - `undefined`: Uses the default array format of `qs.stringify`.
    *   - `undefined`：使用 `qs.stringify` 的默认数组格式。
-   *
-   * @property {ResponseInterceptor} [responseInterceptor] - Interceptor for processing the response.
-   * @property {ResponseInterceptor} [responseInterceptor] - 处理响应的拦截器。
-   *
-   * @property {RequestInterceptor} [requestInterceptor] - Interceptor for processing the request.
-   * @property {RequestInterceptor} [requestInterceptor] - 处理请求的拦截器。
-   *
-   * @property {ErrorInterceptor} [errorInterceptor] - Interceptor for processing the request errors.
- * @property {ErrorInterceptor} [errorInterceptor] - 处理请求错误的拦截器。
    *
    * Error object
    * 错误对象。
@@ -1540,15 +1444,6 @@ class JFetch {
    *   - `undefined`: Uses the default array format of `qs.stringify`.
    *   - `undefined`：使用 `qs.stringify` 的默认数组格式。
    *
-   * @property {ResponseInterceptor} [responseInterceptor] - Interceptor for processing the response.
-   * @property {ResponseInterceptor} [responseInterceptor] - 处理响应的拦截器。
-   *
-   * @property {RequestInterceptor} [requestInterceptor] - Interceptor for processing the request.
-   * @property {RequestInterceptor} [requestInterceptor] - 处理请求的拦截器。
-   *
-   * @property {ErrorInterceptor} [errorInterceptor] - Interceptor for processing the request errors.
-   * @property {ErrorInterceptor} [errorInterceptor] - 处理请求错误的拦截器。
-   *
    * Error object
    * 错误对象。
    * @interface JFetchError
@@ -1595,14 +1490,29 @@ class JFetch {
   errorInterceptor = new InterceptorManager<JFetchError>();
 
   /**
+   * Error interceptor manager.
+   * 错误拦截器管理器。
+   */
+  finallyInterceptor = new InterceptorManager<AbortController>();
+
+  /**
    * Abort all requests.
    * 终止所有请求。
    */
-  abortAll(){
+  abortAll() {
     this.requestQueue.forEach(item => {
       item.abort();
     })
     this.requestQueue = [];
+  }
+
+  /**
+   * Get request queue.
+   * 获取请求队列。
+   * @returns AbortController[]
+   */
+  getQueue(): AbortController[] {
+    return this.requestQueue.map(item => item.getController());
   }
 }
 

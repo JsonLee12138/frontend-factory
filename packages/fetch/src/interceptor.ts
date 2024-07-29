@@ -6,11 +6,11 @@ class InterceptorManager<T = any> implements InterceptorManagerInstance<T> {
     this.use = this.use.bind(this);
     this.run = this.run.bind(this);
   }
-  use(interceptor: Interceptor<T>) {
+  use<R = any>(interceptor: Interceptor<T, R>) {
     this.handlers.push(interceptor);
   }
 
-  async run(config: T): Promise<T> {
+  async run(config: T): Promise<any> {
     for (const handler of this.handlers) {
       config = await handler(config);
     }

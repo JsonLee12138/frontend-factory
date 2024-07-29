@@ -1,9 +1,9 @@
 import QueryString from "qs";
 
-export type Interceptor<T = any> = (config: T) => T | Promise<T>;
+export type Interceptor<T = any, R = any> = (config: T) => R | Promise<R>;
 export interface InterceptorManagerInstance<T = any> {
-  use(interceptor: Interceptor<T>): void;
-  run(config: T): Promise<T>;
+  use<R>(interceptor: Interceptor<T, R>): void;
+  run(config: T): Promise<any>;
 }
 
 export type RequestInterceptor = InterceptorManagerInstance<Omit<JFetchOptions, 'headers'> & { url: string; headers: Headers; }>;
@@ -11,6 +11,8 @@ export type RequestInterceptor = InterceptorManagerInstance<Omit<JFetchOptions, 
 export type ResponseInterceptor<T = any> = InterceptorManagerInstance<JFetchAbortablePromise<T>>;
 
 export type ErrorInterceptor = InterceptorManagerInstance<JFetchError>;
+
+export type FinallyInterceptor = InterceptorManagerInstance<AbortController>;
 
 export interface JFetchOptions extends RequestInit {
   params?: Record<string, any>;
@@ -21,8 +23,9 @@ export interface JFetchOptions extends RequestInit {
   baseURL?: string;
   responseInterceptor?: ResponseInterceptor;
   requestInterceptor?: RequestInterceptor;
+  finallyInterceptor?: FinallyInterceptor;
   errorInterceptor?: ErrorInterceptor;
-  qsArrayFormat?: QueryString.IStringifyOptions['arrayFormat']
+  qsArrayFormat?: QueryString.IStringifyOptions['arrayFormat'];
 }
 
 export interface JFetchError {
@@ -45,6 +48,7 @@ export type JFetchRequestWithDataOptions = Omit<JFetchOptions, 'baseURL' | 'data
 
 export interface JFetchAbortablePromise<T = any> {
   abort: () => void;
+  getController: ()=> AbortController;
   then<TResult1 = T, TResult2 = never>(
     onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null,
     onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null
