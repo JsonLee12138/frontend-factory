@@ -141,6 +141,7 @@ class AbortablePromise<T> implements JFetchAbortablePromise<T> {
  */
 export function request<T = any>(url: string, { headers: _headers, timeout = 3000, isStream = false, streamCallback = () => { }, method = Method.GET, params, data, responseInterceptor, requestInterceptor, errorInterceptor, mode = 'cors', qsArrayFormat = "repeat", finallyInterceptor,...options }: JFetchRequestOptions = {}): JFetchAbortablePromise<T> {
   let headers = mergeHeaders(baseHeaders, _headers);
+  console.log('headers', baseHeaders, _headers)
   const controller = new AbortController();
   const signal = controller.signal;
   let timeoutFlag: boolean = false;
@@ -802,8 +803,18 @@ async function dataToJson(res: Response) {
     }))
   }
 }
-function mergeHeaders(_baseHeaders: HeadersInit = {}, _newHeaders: HeadersInit = {}): Headers {
-  return new Headers({ ..._baseHeaders, ..._newHeaders })
+function mergeHeaders(_baseHeaders: HeadersInit | Headers = {}, _newHeaders: HeadersInit | Headers = {}): Headers {
+  const _result = _baseHeaders instanceof Headers ? _baseHeaders : new Headers(_baseHeaders);
+  const combineHeaders = (_headers: HeadersInit | Headers) => {
+    if(!(_headers instanceof Headers)){
+      _headers = new Headers(_headers);
+    }
+    _headers.forEach((value, key) => {
+      _result.set(key, value);
+    });
+  }
+  combineHeaders(_newHeaders);
+  return _result;
 }
 
 function genError({ code, message, requestHeaders, responseHeaders, url }: JFetchError): JFetchError {
