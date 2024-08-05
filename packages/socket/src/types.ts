@@ -6,6 +6,7 @@ export interface SocketOptions<T> {
   shouldReconnect?: boolean;
   protocols?: string | string[];
   showLog?: boolean;
+  connectResend?: boolean;
   onOpen?: (e: WebSocketEventMap["open"]) => void;
   onClose?: (e: WebSocketEventMap["close"]) => void;
   onMessage?: (_d: T) => void;

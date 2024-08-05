@@ -12,6 +12,8 @@ export class Socket<T = any> {
   private maxReconnectAttempts: number = 0;
   private url: string = "";
   private protocols: string | string[] = [];
+  private sendQueue: T[] = [];
+  private connectResend: boolean = false;
   private _onOpen: SocketOptions<T>["onOpen"] = () => {
     if (this.showLog) {
       console.log("websocket had opened");
@@ -73,6 +75,9 @@ export class Socket<T = any> {
    *
    * @param {Array} [options.protocols=[]] - An array of protocols to use in the WebSocket connection.
    * @param {Array} [options.protocols=[]] - 用于 WebSocket 连接的协议数组。
+   *
+   * @param {boolean} [connectResend] - Whether to resend unsent content after connection.
+   * @param {boolean} [connectResend] - 连接后是否重新发送未发送内容。
    */
   constructor(
     url: string,
@@ -86,7 +91,8 @@ export class Socket<T = any> {
       onError,
       onMessage,
       onOpen,
-      protocols = []
+      protocols = [],
+      connectResend = false
     }: SocketOptions<T> = {}
   ) {
     this.showLog = showLog;
@@ -100,6 +106,7 @@ export class Socket<T = any> {
     onOpen && (this._onOpen = onOpen);
     onError && (this._onError = onError);
     onMessage && (this._onMessage = onMessage);
+    this.connectResend = connectResend;
   }
 
   /**
@@ -139,6 +146,12 @@ export class Socket<T = any> {
 
   private onOpen = (e: WebSocketEventMap['open']) => {
     this.startHeartBeat();
+    if(this.connectResend){
+      while (this.sendQueue.length) {
+        const item = this.sendQueue.shift();
+        this.send(item);
+      }
+    }
     this._onOpen?.(e);
   };
 
@@ -165,7 +178,9 @@ export class Socket<T = any> {
         data = JSON.stringify(e) as any;
       }
       this.instance?.send(data as string);
+      return
     }
+    this.sendQueue.push(e as any);
   };
 
 
