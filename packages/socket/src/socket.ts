@@ -180,7 +180,9 @@ export class Socket<T = any> {
       this.instance?.send(data as string);
       return
     }
-    this.sendQueue.push(e as any);
+    if(this.connectResend){
+      this.sendQueue.push(e as any);
+    }
   };
 
 

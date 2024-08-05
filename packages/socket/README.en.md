@@ -21,6 +21,7 @@ constructor(
 - **options**: Configuration options for the WebSocket.
   - **showLog**: Whether to show logs.
   - **reconnectInterval**: Interval in milliseconds between reconnection attempts.
+  - **connectResend**: Whether to resend unsent content after connection.
   - **heartbeatInterval**: Interval in milliseconds between heartbeat messages.
   - **heartbeatMessage**: Message sent as a heartbeat to keep the connection alive.
   - **maxReconnectAttempts**: Maximum number of reconnection attempts. 0 means no reconnection.
@@ -60,6 +61,7 @@ const options = {
   heartbeatInterval: 5000,
   heartbeatMessage: "ping",
   maxReconnectAttempts: 5,
+  connectResend: true,
   onClose: (e: any) => console.log('WebSocket closed:', e),
   onError: (e: any) => console.error('WebSocket error:', e),
   onMessage: (msg: any) => console.log('WebSocket message:', msg),

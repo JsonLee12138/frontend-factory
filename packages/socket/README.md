@@ -21,6 +21,7 @@ constructor(
 - **options**: WebSocket 的配置选项。
   - **showLog**: 是否显示日志。
   - **reconnectInterval**: 重连尝试之间的间隔时间（毫秒）。
+  - **connectResend**: 重连后是否重新发送之前未发送出的消息。
   - **heartbeatInterval**: 心跳消息之间的间隔时间（毫秒）。
   - **heartbeatMessage**: 作为心跳发送的消息以保持连接。
   - **maxReconnectAttempts**: 最大重连尝试次数。0 表示不重连。
@@ -60,6 +61,7 @@ const options = {
   heartbeatInterval: 5000,
   heartbeatMessage: "ping",
   maxReconnectAttempts: 5,
+  connectResend: true,
   onClose: (e: any) => console.log('WebSocket closed:', e),
   onError: (e: any) => console.error('WebSocket error:', e),
   onMessage: (msg: any) => console.log('WebSocket message:', msg),
