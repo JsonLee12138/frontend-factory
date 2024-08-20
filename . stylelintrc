@@ -1,0 +1,29 @@
+extends:
+  - "stylelint-config-standard"
+  - "stylelint-config-sass-guidelines"
+  - "stylelint-config-recommended-scss"
+plugins:
+  - "stylelint-scss"
+  - "stylelint-less"
+  - "stylelint-order"
+rules:
+  indentation: 2
+  string-quotes: "single"
+  selector-class-pattern: "^[a-z]([a-z0-9]*)(__[a-z0-9]+)*(--[a-z0-9]+)*$" # BEM
+  max-nesting-depth: 3
+  color-hex-length: "short"
+  color-named: "never"
+  order/properties-alphabetical-order: true
+  block-no-empty: true
+  no-duplicate-selectors: true
+  declaration-block-no-duplicate-properties: true
+  no-descending-specificity: true
+  at-rule-no-unknown:
+    - true
+    - ignoreAtRules:
+        - "mixin" # 允许 SCSS/Sass 和 Less 的 mixin 规则
+        - "include"
+        - "extend"
+        - "import"
+        - "if"
+        - "else"

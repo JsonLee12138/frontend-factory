@@ -1,0 +1,47 @@
+{
+  "extends": [
+    "../../.eslintrc",
+    "plugin:react/recommended"
+  ],
+  "plugins": ["react", "react-hooks"],
+  "env": {
+    "browser": true,
+    "es6": true,
+    "jest": true
+  },
+  "parserOptions": {
+    "ecmaFeatures": {
+      "jsx": true
+    },
+    "ecmaVersion": 2020,
+    "sourceType": "module"
+  },
+  "settings": {
+    "react": {
+      "version": "detect"
+    }
+  },
+  "rules": {
+    "react/jsx-filename-extension": [1, { "extensions": [".js", ".jsx"] }],
+    "react/prop-types": "off",  // 如果你不使用 PropTypes，可以关闭此规则
+    "react/prefer-stateless-function": "off",  // 允许类组件
+    "react/state-in-constructor": [2, "never"],  // 状态初始化不强制放在构造函数中
+    "react/no-access-state-in-setstate": "error",  // 警告：在 setState 中访问 state
+    "react/no-unused-state": "warn",  // 警告：未使用的 state
+    "react/sort-comp": [
+      2,
+      {
+        "order": [
+          "static-variables",
+          "static-methods",
+          "lifecycle",
+          "everything-else",
+          "render"
+        ]
+      }
+    ],
+    "react-hooks/rules-of-hooks": "error", // 检查 Hook 的规则
+    "react-hooks/exhaustive-deps": "warn", // 检查 effect 的依赖
+    "react/no-direct-mutation-state": "error",
+  }
+}

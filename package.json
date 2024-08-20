@@ -1,0 +1,39 @@
+{
+  "name": "frontend-factory",
+  "packageManager": "yarn@4.4.0",
+  "scripts": {
+    "dev:admin": "yarn workspace jsonlee-admin dev",
+    "commit": "git add -A && git-cz"
+  },
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "config": {
+    "commitizen": {
+      "path": "node_modules/cz-git"
+    }
+  },
+  "devDependencies": {
+    "@commitlint/config-conventional": "^19.2.2",
+    "commitlint": "^19.4.0",
+    "cross-env": "^7.0.3",
+    "cz-git": "^1.9.4",
+    "eslint": "^9.9.0",
+    "eslint-config-airbnb": "^19.0.4",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-import": "^2.29.1",
+    "eslint-plugin-jsx-a11y": "^6.9.0",
+    "eslint-plugin-prettier": "^5.2.1",
+    "eslint-plugin-react": "^7.35.0",
+    "eslint-plugin-react-hooks": "^4.6.2",
+    "husky": "^9.1.4",
+    "prettier": "^3.3.3",
+    "stylelint": "^16.8.2",
+    "stylelint-config-recommended-less": "^3.0.1",
+    "stylelint-config-recommended-scss": "^14.1.0",
+    "stylelint-config-standard": "^36.0.1",
+    "stylelint-less": "^3.0.1",
+    "stylelint-scss": "^6.5.0"
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "name": "jsonlee-fetch",
+  "version": "1.2.0",
+  "description": "JFetch is an HTTP request library based on fetch that provides a similar experience to axios.",
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "types": "dist/types/index.d.ts",
+  "scripts": {
+    "build": "rollup -c"
+  },
+  "files": [
+    "dist",
+    "!dist/**/*.map"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/JsonLee12138/frontend-factory/tree/main/packages/fetch"
+  },
+  "keywords": [
+    "axios",
+    "fetch",
+    "http",
+    "request",
+    "stream",
+    "promise",
+    "abort controller"
+  ],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^26.0.1",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@types/node": "^20.14.11",
+    "@types/qs": "^6.9.15",
+    "rollup": "^4.19.0",
+    "rollup-plugin-delete": "^2.0.0",
+    "rollup-plugin-terser": "^7.0.2",
+    "rollup-plugin-typescript2": "^0.36.0",
+    "tslib": "^2.6.3"
+  },
+  "dependencies": {
+    "qs": "^6.12.3"
+  }
+}

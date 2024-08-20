@@ -1,0 +1,34 @@
+{
+  "name": "jsonlee-ws",
+  "version": "1.0.5",
+  "description": "JSON WebSocket is a Socket class for managing WebSocket connections, with various WebSocket wrappers for reconnection, heartbeat messages and event handling options.",
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "types": "dist/types/index.d.ts",
+  "scripts": {
+    "build": "rollup -c"
+  },
+  "files": [
+    "dist",
+    "!dist/**/*.map"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/JsonLee12138/frontend-factory/tree/main/packages/socket"
+  },
+  "keywords": [
+    "websocket",
+    "socket"
+  ],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^26.0.1",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@types/node": "^20.14.11",
+    "rollup": "^4.19.0",
+    "rollup-plugin-terser": "^7.0.2",
+    "rollup-plugin-typescript2": "^0.36.0"
+  }
+}
