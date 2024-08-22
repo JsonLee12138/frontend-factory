@@ -16,7 +16,6 @@ interface StoreDispatchProps {
   clearLoading: () => void;
 }
 
-
 const mapStateToProps = (state: RootState) => ({
   loading: state.loading.loading,
 });
