@@ -1,8 +1,12 @@
-node_modules/
-dist/
+**/node_modules/
+**/dist/
 .idea/
 .vscode/
 .DS_Store
 .yarn
-*.lock
-*.local
+package-lock.json
+pnpm-lock.yaml
+**/*.lock
+**/*.local
+**/*.log
+**/*.log.*

@@ -3,7 +3,7 @@
   "packageManager": "yarn@4.4.0",
   "scripts": {
     "dev:admin": "yarn workspace jsonlee-admin dev",
-    "commit": "git add -A && git-cz"
+    "commit": "git-cz"
   },
   "workspaces": [
     "packages/*",

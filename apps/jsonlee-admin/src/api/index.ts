@@ -1,5 +1,5 @@
 import { post, get, put, del } from '@/utils/request';
-import Api from '@/types/api';
+import { ListData, PageParams } from '@/types/api';
 
 export class BaseApi {
   protected basePath: string = '';
@@ -23,9 +23,9 @@ export class BaseApi {
   public getItem = <T, I extends string | number = string>(id: I) =>
     get<T>(`${this.basePath}/${id}`);
 
-  public getList = <T, P extends Partial<Api.PageParams>>(params: P = {} as P) => {
+  public getList = <T, P extends Partial<PageParams>>(params: P = {} as P) => {
     if (params.paginated) {
-      return get<Api.ListData<T>>(`${this.basePath}/list`, params);
+      return get<ListData<T>>(`${this.basePath}/list`, params);
     }
     return get<T[]>(`${this.basePath}/list`, params);
   };

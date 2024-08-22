@@ -4,7 +4,7 @@ import JFetch, { JFetchRequestOptions, StatusCode, ContentType } from 'jsonlee-f
 import { message } from 'antd';
 import { getDeviceId } from './deviceId.ts';
 import { getAccessToken } from './token.ts';
-import Api from '../types/api';
+import { Result } from '../types/api';
 import { RequestOptions } from '@/types/request.ts';
 let isLoading = false;
 let hasToast = false;
@@ -89,9 +89,9 @@ function clearLoading() {
 
 export const cancelAll = jftech.abortAll;
 export const request = <T>(url: string, options: JFetchRequestOptions) =>
-  jftech.request<Api.Result<T>>(url, options);
+  jftech.request<Result<T>>(url, options);
 
-function checkRes<T>(res: Api.Result<T>) {
+function checkRes<T>(res: Result<T>) {
   if (res.code === 200) {
     return res;
   }
@@ -102,32 +102,32 @@ function checkRes<T>(res: Api.Result<T>) {
   return Promise.reject({ code: res.code, message: res.msg });
 }
 
-export const get = <T, P extends object = {}>(
+export const get = <T, P extends object = object>(
   url: string,
   params: P = {} as P,
   options: RequestInit = {},
 ) => {
-  return jftech.get<Api.Result<T>, P>(url, params, { ...options, method: 'GET' });
+  return jftech.get<Result<T>, P>(url, params, { ...options, method: 'GET' });
 };
 
-export const post = <T, D extends object = {}>(
+export const post = <T, D extends object = object>(
   url: string,
   data: D = {} as D,
   options: RequestInit = {},
 ) => {
-  return jftech.post<Api.Result<T>, D>(url, data, { ...options, method: 'POST' });
+  return jftech.post<Result<T>, D>(url, data, { ...options, method: 'POST' });
 };
 
-export const put = <T, D extends object = {}>(
+export const put = <T, D extends object = object>(
   url: string,
   data: D = {} as D,
   options: RequestInit = {},
 ) => {
-  return jftech.put<Api.Result<T>, D>(url, data, { ...options, method: 'PUT' });
+  return jftech.put<Result<T>, D>(url, data, { ...options, method: 'PUT' });
 };
 
 export const del = <T>(url: string, options: RequestOptions = {}) => {
-  return jftech.delete<Api.Result<T>>(url, { ...options, method: 'DELETE' });
+  return jftech.delete<Result<T>>(url, { ...options, method: 'DELETE' });
 };
 
 export const upload = async <T>(
@@ -135,7 +135,7 @@ export const upload = async <T>(
   data: FormData,
   options: RequestOptions = {},
 ) => {
-  return jftech.request<Api.Result<T>>(url, {
+  return jftech.request<Result<T>>(url, {
     ...options,
     data,
     method: 'POST',

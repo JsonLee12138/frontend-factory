@@ -1,5 +1,0 @@
-extends:
-  - "../../.stylelintrc" # 继承全局配置
-rules:
-  max-nesting-depth: 4 # 针对这个子包，允许更深的嵌套深度
-  selector-max-id: 0 # 不允许使用 ID 选择器
