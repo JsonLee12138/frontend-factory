@@ -5,7 +5,7 @@ import emitter from '@/utils/emitter.ts';
 import { EmitterEvents } from '@/enum/emitter.ts';
 import { connect } from '@/decorator/connect.ts';
 import { setLoading, clearLoading } from '@/store/modules/loading.ts';
-import { AppDispatch, ConnectedProps, RootState } from './types/store.ts';
+import { ConnectedProps, RootState } from './types/store.ts';
 
 interface StoreStateProps {
   loading: boolean;
@@ -19,29 +19,33 @@ interface StoreDispatchProps {
 const mapStateToProps = (state: RootState) => ({
   loading: state.loading.loading,
 });
-const mapDispatchToProps = (dispatch: AppDispatch) => ({
-  setLoading: () => dispatch(setLoading()),
-  clearLoading: () => dispatch(clearLoading()),
-});
+const mapDispatchToProps = {
+  setLoading,
+  clearLoading,
+};
 
-type CounterClassProps = ConnectedProps<StoreStateProps, StoreDispatchProps, object>;
+type FinalProps = ConnectedProps<StoreStateProps, StoreDispatchProps, object>;
+
 @connect<StoreStateProps>(mapStateToProps, mapDispatchToProps)
 @autoBind
-class App extends Component<CounterClassProps> {
+class App extends Component<FinalProps> {
   state = {
     count: 0,
   };
 
-  constructor(props: CounterClassProps) {
+  constructor(props: FinalProps) {
     super(props);
     emitter.on(EmitterEvents.SET_LOADING, () => {
       this.props.setLoading!();
-      console.log(1);
     });
+    emitter.on(EmitterEvents.CLEAR_LOADING, ()=> {
+      this.props.clearLoading!()
+    })
   }
 
   componentWillUnmount() {
     emitter.off(EmitterEvents.SET_LOADING);
+    emitter.off(EmitterEvents.CLEAR_LOADING);
   }
 
   setCount(value: number) {

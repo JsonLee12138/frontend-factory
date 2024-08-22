@@ -1,11 +1,14 @@
 import { createSlice } from '@reduxjs/toolkit';
+import { UserState } from '@/types/store_modules/user.ts';
+
+const initState: UserState = {
+  userInfo: {},
+  accessToken: ''
+}
 
 export const userSlice = createSlice({
   name: 'user',
-  initialState: {
-    userInfo: {},
-    accessToken: '',
-  },
+  initialState: initState,
   reducers: {
     setUserInfo: (state, action) => {
       state.userInfo = action.payload

@@ -12,7 +12,7 @@ const rootReducer = combineReducers({
 })
 
 const persistConfig = {
-  key: 'root',
+  key: import.meta.env.VITE_PERSIST_CACHE_KEY,
   whitelist: ['user'],
   storage,
   transforms: [encrypt<typeof rootReducer>()],

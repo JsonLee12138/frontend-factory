@@ -1,5 +1,12 @@
 export const getAccessToken = () => {
-  return localStorage.getItem(import.meta.env.VITE_ACCESS_TOKEN_CACHE_KEY);
+  const userCache = localStorage.getItem(import.meta.env.VITE_PERSIST_CACHE_KEY);
+  if (userCache){
+    const userBuffer = JSON.parse(userCache).user;
+    const userInfoStr = CryptoJS.AES.decrypt(userBuffer, import.meta.env.VITE_ENCRYPT_KEY).toString(CryptoJS.enc.Utf8);
+    return JSON.parse(userInfoStr).accessToken;
+  }
+  // return localStorage.getItem(import.meta.env.VITE_ACCESS_TOKEN_CACHE_KEY);
+  return '';
 }
 
 export const setAccessToken = (accessToken: string) => {

@@ -4,13 +4,17 @@ import { autoBind } from 'jsonlee-decorator/src';
 import { getBotCheckCode, signin } from '@/api/modules/base.ts';
 import Base from '@/types/api_modules/base.ts';
 import { md5 } from 'js-md5';
-// import { TransitionGroup, CSSTransition } from 'react-transition-group';
+import { withRouter, WithRouterProps } from '@/decorator/withRouter.tsx';
+import { connect } from '@/decorator/connect.ts';
+import { ConnectedProps, RootState } from '@/types/store.ts';
+import { setAccessToken, setUserInfo } from '@/store/modules/user.ts';
 
-// interface FormData {
-//   username?: string;
-//   password?: string;
-//   captcha?: string;
-// };
+interface DispatchProps {
+  setUserInfo: typeof setUserInfo;
+  setAccessToken: typeof setAccessToken;
+}
+
+type FinalProps = ConnectedProps<unknown, DispatchProps, WithRouterProps>;
 
 const formList = [
   {
@@ -45,8 +49,18 @@ const captchaFormItem = {
   rules: [{ required: true, message: '请输入验证码' }],
 };
 
+@connect(
+  (state: RootState)=> ({
+    userInfo: state.user.userInfo
+  }),
+  {
+    setUserInfo,
+    setAccessToken
+  }
+)
+@withRouter
 @autoBind
-class Singin extends Component {
+class Singin extends Component<FinalProps> {
   state = {
     captchaLoading: false,
     captchaURL: '',
@@ -57,7 +71,7 @@ class Singin extends Component {
     init: false
   };
 
-  constructor(props: object) {
+  constructor(props: FinalProps) {
     super(props);
   }
 
@@ -100,7 +114,8 @@ class Singin extends Component {
         captchaId: this.state.captchaId,
       });
       message.success('登录成功!');
-      console.log(data, '登录成功');
+      this.props.setAccessToken!(data.accessToken);
+      this.props.navigate!(data.defaultRouter);
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (e) {
       this.refreshBotCheckCode();

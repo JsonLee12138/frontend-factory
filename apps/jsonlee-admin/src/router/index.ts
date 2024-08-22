@@ -14,7 +14,7 @@ export const staticRoutes: RouterItem[] = [
     }
   },
   {
-    path: '/layout',
+    path: '/',
     name: 'layout',
     component: Layout,
   },
