@@ -4,7 +4,7 @@ export interface TreeBindingOptions {
   childrenKey: string;
 }
 
-export const treeBind = <T extends Record<string, unknown>>(
+export const treeBind = <T extends object>(
   data: T[],
   {
     idKey = 'id',
@@ -14,11 +14,11 @@ export const treeBind = <T extends Record<string, unknown>>(
 ) => {
   const treeData: T[] = [];
   const map = new Map();
-  data.forEach(item => {
-    map.set(item[idKey], item);
+  data.forEach((item) => {
+    map.set((item as Record<string, unknown>)[idKey], item);
   });
   data.forEach(item => {
-    const parent = map.get(item[parentKey]);
+    const parent = map.get((item as Record<string, unknown>)[parentKey]);
     if (parent) {
       (parent[childrenKey] || (parent[childrenKey] = [])).push(item);
     } else {
@@ -26,28 +26,6 @@ export const treeBind = <T extends Record<string, unknown>>(
     }
   });
   return treeData;
-};
-
-export const arrPick = <T extends Record<string, unknown>>(data: T[], keys: string[]) => {
-  return data.map(item => {
-    const result: Record<string, unknown> = {};
-    for (const key of keys) {
-      result[key] = item[key];
-    }
-    return result;
-  });
-};
-
-export const arrOmit = <T extends Record<string, unknown>>(data: T[], keys: string[]) => {
-  return data.map(item => {
-    const result: Record<string, unknown> = {};
-    for (const key in item) {
-      if (!keys.includes(key)) {
-        result[key] = item[key];
-      }
-    }
-    return result;
-  });
 };
 
 export const treeOmit = <T extends Record<string, unknown>>(data: T[], keys: string[]) => {

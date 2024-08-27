@@ -12,21 +12,21 @@ export class BaseApi {
     createTime: string;
     updateTime: string | null;
   };
-  public add = <T, P extends object>(data: P) => post<T>(this.basePath, data);
+  public add = <D extends object, T = unknown>(data: D) => post<T>(this.basePath, data);
 
   public delete = <T, I extends string | number = string>(ids: I | I[]) =>
     del<T>(`${this.basePath}/${Array.isArray(ids) ? ids.join(',') : ids}`);
 
-  public update = <T, P extends object>(data: P) =>
+  public update = <P extends object, T = unknown>(data: P) =>
     put<T>(`${this.basePath}`, data);
 
   public getItem = <T, I extends string | number = string>(id: I) =>
     get<T>(`${this.basePath}/${id}`);
 
-  public getList = <T, P extends Partial<PageParams>>(params: P = {} as P) => {
-    if (params.paginated) {
-      return get<ListData<T>>(`${this.basePath}/list`, params);
-    }
-    return get<T[]>(`${this.basePath}/list`, params);
+  public getList = <T, P = {}>(params: P = {} as P & Partial<PageParams>) => {
+    return get<ListData<T>>(this.basePath, params as object);
+  };
+  public getListWithoutPagination = <T, P = {}>(params: P = {} as P) => {
+    return get<T[]>(this.basePath, { ...params, paginated: false } as object);
   };
 }

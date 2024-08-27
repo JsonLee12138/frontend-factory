@@ -1,6 +1,6 @@
-namespace Base {
+export namespace Base {
   export interface GetBotCheckCodeResult {
-    id: number;
+    id: string;
     enable: boolean;
     picPath: string;
   }

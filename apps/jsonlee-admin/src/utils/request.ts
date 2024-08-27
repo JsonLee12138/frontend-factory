@@ -13,7 +13,7 @@ const basePath = import.meta.env.DEV ? '/api' : import.meta.env.VITE_API_URL;
 const jftech = new JFetch({
   baseURL: basePath,
   headers: {
-    'Content-Type': ContentType.FORM_URLENCODED,
+    'Content-Type': ContentType.JSON,
     'X-Requested-With': 'XMLHttpRequest',
     'X-Client-Type': 'WEB'
   },

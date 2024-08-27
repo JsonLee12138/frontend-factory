@@ -4,7 +4,7 @@
     "airbnb",
     "plugin:prettier/recommended"
   ],
-  "plugins": ["import"],
+  "plugins": ["import", "unused-imports"],
   "env": {
     "es6": true,
     "node": true,
@@ -12,6 +12,16 @@
     "jest": true
   },
   "rules": {
+    "unused-imports/no-unused-imports": "error",
+    "unused-imports/no-unused-vars": [
+      "warn",
+      {
+        "vars": "all",
+        "varsIgnorePattern": "^_",
+        "args": "after-used",
+        "argsIgnorePattern": "^_"
+      }
+    ],
     "prettier/prettier": "error",
     "import/extensions": [
       "error",

@@ -3,6 +3,7 @@ import PageNotFound from '@/pages/PageNotFound';
 import ForbiddenPage from '@/pages/ForbiddenPage';
 import Singin from '@/pages/Singin';
 import Layout from '@/component/Layout';
+import { lazy } from 'react';
 
 export const staticRoutes: RouterItem[] = [
   {
@@ -17,7 +18,19 @@ export const staticRoutes: RouterItem[] = [
     path: '/',
     name: 'layout',
     component: Layout,
+    children: [
+      {
+        path: '/menu',
+        name: 'menu',
+        component: lazy(()=> import('@/pages/Menu/index.tsx'))
+      }
+    ]
   },
+  // {
+  //   path: '/menu',
+  //   name: 'menu',
+  //   component: lazy(()=> import('@/pages/Menu/index.tsx'))
+  // },
   {
     path: '/403',
     component: ForbiddenPage,
