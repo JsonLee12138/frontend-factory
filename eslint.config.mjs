@@ -1,7 +1,4 @@
 import js from '@eslint/js';
-// import prettier from 'eslint-config-prettier';
-// import prettierPlugin from 'eslint-plugin-prettier';
-// import airbnbBaseRules from 'eslint-config-airbnb-base';
 import airbnb from 'eslint-config-airbnb';
 import importPlugin from 'eslint-plugin-import';
 import unusedImportsPlugin from 'eslint-plugin-unused-imports';
@@ -10,15 +7,15 @@ import globals from 'globals';
 import typescriptPlugin from '@typescript-eslint/eslint-plugin';
 import typescriptParser from '@typescript-eslint/parser';
 import typescript from '@typescript-eslint/eslint-plugin';
+import tseslint from 'typescript-eslint';
 
-export default [
+export default tseslint.config(
   { ignores: ['**/dist/**', '**/node_modules/**'] },
   js.configs.recommended,
   {
     rules: {
       ...airbnb.rules,
     },
-    ignores: ['**/dist/**', '**/node_modules/**'],
   },
   {
     files: ['*.ts', '*.tsx'],
@@ -31,7 +28,6 @@ export default [
     rules: {
       // TypeScript-specific rules can go here
     },
-    // ignores: ['**/dist/**', '**/node_modules/**'],
   },
   {
     plugins: {
@@ -81,4 +77,4 @@ export default [
     },
     ignores: ['**/dist/**', '**/node_modules/**'],
   },
-];
+);
