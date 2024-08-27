@@ -17,7 +17,7 @@ export class BaseApi {
   public delete = <T, I extends string | number = string>(ids: I | I[]) =>
     del<T>(`${this.basePath}/${Array.isArray(ids) ? ids.join(',') : ids}`);
 
-  public update = <P extends object, T = unknown>(data: P) =>
+  public update = <D extends object, T = unknown>(data: D) =>
     put<T>(`${this.basePath}`, data);
 
   public getItem = <T, I extends string | number = string>(id: I) =>

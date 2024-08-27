@@ -2,17 +2,17 @@ import { forwardRef, ReactNode, useCallback, useImperativeHandle } from 'react';
 import { Modal, type ModalProps } from 'antd';
 import { useBoolean, useSafeState } from 'ahooks';
 
-interface Props extends Omit<ModalProps, 'open'> {
+interface Props extends Omit<ModalProps, 'open' | 'onOk'> {
   onConfirm?: (done: () => void) => void;
   afterClose?: () => void;
   children?: ReactNode;
 }
 
 const Dialog = forwardRef(
-  ({ onConfirm, afterClose, children, onOk, ...props }: Props, ref) => {
+  ({ title: _title, onConfirm, afterClose, children, ...props }: Props, ref) => {
     const [visible, { setFalse: setVisibleFalse, setTrue: setVisibleTrue }] =
       useBoolean(false);
-    const [title] = useSafeState<string>('');
+    const [title, setTitle] = useSafeState<string>(_title as string);
     const handleAfterClose = useCallback(() => {
       afterClose?.();
     }, [afterClose]);
@@ -22,13 +22,14 @@ const Dialog = forwardRef(
     const handleConfirm = useCallback(() => {
       onConfirm?.(close);
     }, [close]);
-    const open = useCallback(() => {
+    const open = useCallback((title?: string) => {
+      title && setTitle(title);
       setVisibleTrue();
     }, []);
-    useImperativeHandle(ref ,()=> ({
+    useImperativeHandle(ref, () => ({
       open,
-      close
-    }), [])
+      close,
+    }), []);
     return (
       <Modal
         {...props}

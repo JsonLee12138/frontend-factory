@@ -11,10 +11,11 @@ import {
   Select,
   Space,
   Table,
+  message,
 } from 'antd';
 import Icon from '@icon-park/react/es/all';
 import { menuParamsTypes } from '@/dic/menu.ts';
-import { Menu } from '@/types/api_modules/menu.ts';
+import { Menu as MenuType, Menu } from '@/types/api_modules/menu.ts';
 import { MenuParamsType } from '@/enum/dic.ts';
 import Form from '@/component/Form';
 import TreeSelect from '@/component/TreeSelect';
@@ -24,10 +25,10 @@ import { cloneDeep } from 'lodash';
 import Dialog from '@/component/Dialog';
 import { DialogInstance } from '@/component/Dialog/type';
 import { FormFieldItem, FormInstance } from '@/component/Form/type';
+import { MenuApi } from '@/api/modules/menu.ts';
 
-interface Props {
-  onConfirm?: (values: any, done: () => void) => void;
-  beforeClose?: (done: () => void) => void;
+export interface Props {
+  onOk?: () => void;
 }
 
 interface ParamsItem extends Omit<Menu.Params, 'menuId' | 'type'> {
@@ -40,10 +41,12 @@ const initFormData = {
   keepAlive: true,
 };
 
-const EditModal = forwardRef(({onConfirm}: Props, ref) => {
+const menuApi = new MenuApi();
+
+const EditModal = forwardRef(({ onOk }: Props, ref) => {
   const dialogRef = useRef<DialogInstance>(null);
   const formRef = useRef<FormInstance>(null);
-  const [title, setTitle] = useSafeState<string>('');
+  const [msgApi] = message.useMessage();
   const [paramsList, setParamsList] = useSafeState<ParamsItem[]>([]);
   const [tempData, setTempData] = useSafeState<Partial<Menu.UpdateDTO | Menu.CreateDTO>>();
   const menuTree = useAppSelector((state) => state.menu.tree);
@@ -53,13 +56,35 @@ const EditModal = forwardRef(({onConfirm}: Props, ref) => {
         label: '父级菜单',
         name: 'parentId',
         component: (
-          <TreeSelect<Menu.Item>
+          (value, onChange) => <TreeSelect<Menu.Item>
             options={menuTree || []}
             placeholder={'请选择父级菜单'}
-            labelKey='meta.title'
-            valueKey='id'
+            labelKey="meta.title"
+            valueKey="id"
+            value={value}
+            onChange={onChange}
           />
         ),
+      },
+      {
+        label: '路由名称',
+        name: 'name',
+        inputProps: {
+          placeholder: '请输入路由名称',
+        },
+        rules: [
+          { required: true, message: '请输入路由名称' },
+        ]
+      },
+      {
+        label: '展示名称',
+        name: 'title',
+        inputProps: {
+          placeholder: '请输入展示名称',
+        },
+        rules: [
+          { required: true, message: '请输入展示名称' },
+        ]
       },
       {
         label: '文件路径',
@@ -69,18 +94,11 @@ const EditModal = forwardRef(({onConfirm}: Props, ref) => {
         },
       },
       {
-        label: '展示名称',
-        name: 'title',
+        label: '图标',
+        name: 'icon',
         inputProps: {
-          placeholder: '请输入展示名称',
+          placeholder: '请选择图标',
         },
-      },
-      {
-        label: '路由名称',
-        name: 'name',
-        inputProps: {
-          placeholder: '请输入路由名称',
-        }
       },
       {
         label: '是否隐藏',
@@ -90,7 +108,7 @@ const EditModal = forwardRef(({onConfirm}: Props, ref) => {
           checkedChildren: '隐藏',
           unCheckedChildren: '显示',
         },
-        col: 0.5
+        col: 0.5,
       },
       {
         label: '是否缓存',
@@ -100,16 +118,15 @@ const EditModal = forwardRef(({onConfirm}: Props, ref) => {
           checkedChildren: '是',
           unCheckedChildren: '否',
         },
-        col: 0.5
+        col: 0.5,
       },
       {
         label: '排序',
         name: 'sort',
         inputProps: {
           placeholder: '请输入排序值',
-        }
+        },
       },
-
     ];
   }, [menuTree]);
   const handleSetParamsList = useCallback(
@@ -141,16 +158,53 @@ const EditModal = forwardRef(({onConfirm}: Props, ref) => {
   const close = useCallback(() => {
     dialogRef.current?.close();
   }, []);
-  const open = useCallback((title: string, data?: Partial<Menu.UpdateDTO | Menu.CreateDTO>)=> {
-    setTitle(title);
-    setTempData(data);
-    dialogRef.current?.open();
-  }, [])
+  const open = useCallback((title: string, data?: Partial<Menu.UpdateDTO | Menu.CreateDTO>) => {
+    if (data) {
+      setTempData(data);
+      const defaultValues: Partial<MenuType.CreateDTO | MenuType.UpdateDTO> = {
+        ...data,
+        ...data.meta || {},
+      };
+      requestAnimationFrame(() => {
+        formRef.current?.setFieldsValue(defaultValues);
+      });
+    }
+    dialogRef.current?.open(title);
+  }, [formRef.current]);
   const handleConfirm = useCallback(() => {
-
-    // onConfirm()
-
+    formRef.current?.submit();
   }, [tempData, formRef]);
+  const handleSubmit = useCallback(async (values: any) => {
+    let fn: Function = menuApi.add<MenuType.CreateDTO>;
+    const formData: MenuType.CreateDTO | MenuType.UpdateDTO = {
+      name: values.name,
+      path: values.path,
+      component: values.component,
+      sort: values.sort,
+      params: values.params,
+      meta: {
+        title: values.title,
+        icon: values.icon,
+        hidden: values.hidden,
+        keepAlive: values.keepAlive,
+      },
+      parentId: values.parentId,
+    };
+    if (typeof (tempData as Partial<Menu.UpdateDTO>)?.id === 'number') {
+      // 编辑
+      (formData as Menu.UpdateDTO).id = (tempData as Menu.UpdateDTO).id;
+      fn = menuApi.update<Menu.UpdateDTO>;
+    }
+    try {
+      const { msg } = await fn(formData);
+      msgApi.success(msg);
+      onOk?.();
+    } catch (e) {
+
+    } finally {
+      dialogRef.current?.close();
+    }
+  }, [tempData]);
   const handleAfterClose = useCallback(() => {
     // 清空
     formRef.current?.reset();
@@ -210,17 +264,17 @@ const EditModal = forwardRef(({onConfirm}: Props, ref) => {
   );
   return (
     <Dialog
-      title={title}
       ref={dialogRef}
       afterClose={handleAfterClose}
       onCancel={close}
-      onOk={handleConfirm}
+      onConfirm={handleConfirm}
       width={'50%'}
     >
       <Form
         layout={'vertical'}
         fields={formFields}
         ref={formRef}
+        onSubmit={handleSubmit}
         initialValues={initFormData}
       ></Form>
       <Button

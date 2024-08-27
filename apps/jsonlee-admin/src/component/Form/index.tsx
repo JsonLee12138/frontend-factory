@@ -8,7 +8,7 @@ import {
   useState,
 } from 'react';
 import { Col, Form as AForm, Input, InputNumber, Row, Select, Switch } from 'antd';
-import type { FormInstance, FormProps, FormRule, RowProps } from 'antd';
+import type { FormInstance, FormProps, RowProps } from 'antd';
 import emitter from '@/utils/emitter.ts';
 import { EmitterEvents } from '@/enum/emitter.ts';
 import { FormFieldItem } from './type';
@@ -17,35 +17,45 @@ interface Props extends Omit<FormProps, 'fields' | 'onFinish'> {
   gutter?: RowProps['gutter'];
   fields: FormFieldItem[];
   fieldMinWidth?: number;
-  onSubmit?: FormProps['onFinish']
+  onSubmit?: FormProps['onFinish'];
 }
 
-const Field = (props: FormFieldItem) => {
+const Field = ({ value, onChange,...props }: FormFieldItem) => {
   const inputProps = props.inputProps || {};
   switch (props.type) {
     case 'input':
-      return <Input {...inputProps} />;
+      return <Input value={value} onChange={onChange} {...inputProps} />;
     case 'inputNumber':
-      return <InputNumber {...inputProps} />;
+      return <InputNumber value={value} onChange={onChange} {...inputProps} />;
     case 'select':
-      return <Select {...inputProps} />;
+      return <Select value={value} onChange={onChange} {...inputProps} />;
     case 'switch':
-      return <Switch {...inputProps} />
+      return <Switch value={value} onChange={onChange} {...inputProps} />;
     default:
-      if (!props.component) return <Input {...inputProps} />;
-      return props.component;
+      if (!props.component) return <Input value={value} onChange={onChange} {...inputProps} />;
+      return props.component(value, onChange);
   }
 };
 
 const Form = forwardRef(
   (
-    { layout, fieldMinWidth, gutter, fields, colon, labelAlign, onSubmit }: Props,
+    {
+      layout = 'horizontal',
+      fieldMinWidth,
+      gutter = 16,
+      scrollToFirstError = true,
+      fields,
+      colon,
+      labelAlign,
+      onSubmit,
+      ...props
+    }: Props,
     ref,
   ) => {
     const [wrapWidth, setWrapWidth] = useState<number>(0);
     const formRef = useRef<FormInstance & { nativeElement: HTMLDivElement }>();
     const fieldSpan = useMemo(() => {
-      const defaultMinWidth = !layout || layout === 'horizontal' ? 280 : 200;
+      const defaultMinWidth = layout === 'horizontal' ? 280 : 200;
       const minWidth = fieldMinWidth || defaultMinWidth;
       if (!wrapWidth) return 24;
       const cols = Math.floor(wrapWidth / minWidth);
@@ -55,19 +65,13 @@ const Form = forwardRef(
     }, [wrapWidth, layout]);
     const submit = useCallback(() => {
       formRef.current?.submit();
-      // const valid = await formRef.current?.validateFields();
-      // if(valid){
-
-      // }
     }, [formRef]);
-    const reset = useCallback(()=> {
-      formRef.current?.resetFields();
-    }, [])
     useImperativeHandle(
       ref,
       () => ({
         submit,
-        reset
+        reset: formRef.current?.resetFields,
+        setFieldsValue: formRef.current?.setFieldsValue
       }),
       [],
     );
@@ -83,12 +87,14 @@ const Form = forwardRef(
       };
     }, []);
     return (
-      <AForm ref={formRef as any} layout={layout} onFinish={onSubmit}>
-        <Row gutter={gutter ?? 16}>
+      <AForm {...props} ref={formRef as any} scrollToFirstError={scrollToFirstError} layout={layout}
+             onFinish={onSubmit}>
+        <Row gutter={gutter}>
           {fields.map((field) => {
             const col = field.col || 1;
+            const span = Math.min(Math.max(Math.ceil(fieldSpan * col), 1), 24);
             return (
-              <Col span={fieldSpan * col} key={field.name}>
+              <Col span={span} key={field.name}>
                 <AForm.Item
                   name={field.name}
                   rules={field.rules}

@@ -1,4 +1,4 @@
 export interface DialogInstance {
-  open: ()=> void;
-  close: ()=> void;
+  open: (title?: string) => void;
+  close: () => void;
 }
