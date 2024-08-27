@@ -11,25 +11,25 @@ export default {
       file: 'dist/cjs/index.js',
       format: 'cjs',
       sourcemap: true,
-      plugins: [terser()]
+      plugins: [terser()],
     },
     {
       file: 'dist/esm/index.js',
       format: 'esm',
       sourcemap: true,
-      plugins: [terser()]
-    }
+      plugins: [terser()],
+    },
   ],
   plugins: [
     del({ targets: 'dist/*' }),
     resolve({
       browser: true, // 确保优先使用浏览器版本的模块
-      preferBuiltins: true
+      preferBuiltins: true,
     }),
     commonjs(),
     typescript({
-      tsconfig: "tsconfig.json",
-      useTsconfigDeclarationDir: true
-    })
-  ]
+      tsconfig: 'tsconfig.json',
+      useTsconfigDeclarationDir: true,
+    }),
+  ],
 };

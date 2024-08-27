@@ -3,8 +3,10 @@ import globals from 'globals';
 import reactHooks from 'eslint-plugin-react-hooks';
 import reactRefresh from 'eslint-plugin-react-refresh';
 import tseslint from 'typescript-eslint';
+import base from '../../eslint.config.mjs';
 
 export default tseslint.config(
+  base,
   { ignores: ['dist'] },
   {
     extends: [
@@ -33,7 +35,10 @@ export default tseslint.config(
         'warn',
         { allowConstantExport: true },
       ],
-      'react/jsx-filename-extension': [1, { extensions: ['.js', '.jsx', '.ts', '.tsx'] }],
+      'react/jsx-filename-extension': [
+        1,
+        { extensions: ['.js', '.jsx', '.ts', '.tsx'] },
+      ],
       'react/prop-types': 'off',
       'react/prefer-stateless-function': 'off',
       'react/state-in-constructor': [2, 'never'],
@@ -60,10 +65,5 @@ export default tseslint.config(
         version: 'detect', // 自动检测 React 版本
       },
     },
-    env: {
-      browser: true,
-      es6: true,
-      jest: true,
-    },
-  }
+  },
 );

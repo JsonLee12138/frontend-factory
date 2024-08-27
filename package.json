@@ -3,7 +3,9 @@
   "packageManager": "yarn@4.4.0",
   "scripts": {
     "dev:admin": "yarn workspace jsonlee-admin dev",
-    "commit": "git-cz"
+    "commit": "git-cz",
+    "lint": "eslint .",
+    "fix": "eslint --fix ."
   },
   "workspaces": [
     "packages/*",

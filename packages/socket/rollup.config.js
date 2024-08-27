@@ -10,21 +10,21 @@ export default {
       file: 'dist/cjs/index.js',
       format: 'cjs',
       sourcemap: true,
-      plugins: [terser()]
+      plugins: [terser()],
     },
     {
       file: 'dist/esm/index.js',
       format: 'esm',
       sourcemap: true,
-      plugins: [terser()]
-    }
+      plugins: [terser()],
+    },
   ],
   plugins: [
     resolve(),
     commonjs(),
     typescript({
-      tsconfig: "tsconfig.json",
-      useTsconfigDeclarationDir: true
-    })
-  ]
+      tsconfig: 'tsconfig.json',
+      useTsconfigDeclarationDir: true,
+    }),
+  ],
 };
