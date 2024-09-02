@@ -12,7 +12,7 @@ export const staticRoutes: RouterItem[] = [
     component: Singin,
     meta: {
       title: '登录',
-    }
+    },
   },
   {
     path: '/',
@@ -22,9 +22,9 @@ export const staticRoutes: RouterItem[] = [
       {
         path: '/menu',
         name: 'menu',
-        component: lazy(()=> import('@/pages/Menu/index.tsx'))
-      }
-    ]
+        component: lazy(() => import('@/pages/Menu/index.tsx')),
+      },
+    ],
   },
   // {
   //   path: '/menu',

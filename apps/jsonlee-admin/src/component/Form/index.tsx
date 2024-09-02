@@ -7,20 +7,21 @@ import {
   useRef,
   useState,
 } from 'react';
-import { Col, Form as AForm, Input, InputNumber, Row, Select, Switch } from 'antd';
-import type { FormInstance, FormProps, RowProps } from 'antd';
+import {
+  Col,
+  Form as AForm,
+  Input,
+  InputNumber,
+  Row,
+  Select,
+  Switch,
+} from 'antd';
+import type { FormInstance } from 'antd';
 import emitter from '@/utils/emitter.ts';
 import { EmitterEvents } from '@/enum/emitter.ts';
-import { FormFieldItem } from './type';
+import type { FormFieldItem, FormProps } from './type';
 
-interface Props extends Omit<FormProps, 'fields' | 'onFinish'> {
-  gutter?: RowProps['gutter'];
-  fields: FormFieldItem[];
-  fieldMinWidth?: number;
-  onSubmit?: FormProps['onFinish'];
-}
-
-const Field = ({ value, onChange,...props }: FormFieldItem) => {
+const Field = ({ value, onChange, ...props }: FormFieldItem) => {
   const inputProps = props.inputProps || {};
   switch (props.type) {
     case 'input':
@@ -32,7 +33,8 @@ const Field = ({ value, onChange,...props }: FormFieldItem) => {
     case 'switch':
       return <Switch value={value} onChange={onChange} {...inputProps} />;
     default:
-      if (!props.component) return <Input value={value} onChange={onChange} {...inputProps} />;
+      if (!props.component)
+        return <Input value={value} onChange={onChange} {...inputProps} />;
       return props.component(value, onChange);
   }
 };
@@ -49,7 +51,7 @@ const Form = forwardRef(
       labelAlign,
       onSubmit,
       ...props
-    }: Props,
+    }: FormProps,
     ref,
   ) => {
     const [wrapWidth, setWrapWidth] = useState<number>(0);
@@ -63,6 +65,12 @@ const Form = forwardRef(
       const span = Math.ceil(24 / cols);
       return Math.min(Math.max(span, 1), 24);
     }, [wrapWidth, layout]);
+    // const perRowCount = useMemo<number>(() => {
+    //   return Math.floor(24 / fieldSpan);
+    // }, [fieldSpan])
+    // const lastRowStartIndex = useMemo<number>(() => {
+    //   return fields.length - fields.length % perRowCount;
+    // }, [perRowCount, fields])
     const submit = useCallback(() => {
       formRef.current?.submit();
     }, [formRef]);
@@ -71,7 +79,7 @@ const Form = forwardRef(
       () => ({
         submit,
         reset: formRef.current?.resetFields,
-        setFieldsValue: formRef.current?.setFieldsValue
+        setFieldsValue: formRef.current?.setFieldsValue,
       }),
       [],
     );
@@ -87,14 +95,19 @@ const Form = forwardRef(
       };
     }, []);
     return (
-      <AForm {...props} ref={formRef as any} scrollToFirstError={scrollToFirstError} layout={layout}
-             onFinish={onSubmit}>
+      <AForm
+        {...props}
+        ref={formRef as any}
+        scrollToFirstError={scrollToFirstError}
+        layout={layout}
+        onFinish={onSubmit}
+      >
         <Row gutter={gutter}>
           {fields.map((field) => {
             const col = field.col || 1;
             const span = Math.min(Math.max(Math.ceil(fieldSpan * col), 1), 24);
             return (
-              <Col span={span} key={field.name}>
+              <Col span={span} key={field.name || field.uniqueKey}>
                 <AForm.Item
                   name={field.name}
                   rules={field.rules}

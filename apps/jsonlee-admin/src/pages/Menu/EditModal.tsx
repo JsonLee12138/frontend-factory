@@ -5,14 +5,7 @@ import {
   useMemo,
   useRef,
 } from 'react';
-import {
-  Button,
-  Input,
-  Select,
-  Space,
-  Table,
-  message,
-} from 'antd';
+import { Button, Input, Select, Space, Table, message } from 'antd';
 import Icon from '@icon-park/react/es/all';
 import { menuParamsTypes } from '@/dic/menu.ts';
 import { Menu as MenuType, Menu } from '@/types/api_modules/menu.ts';
@@ -48,15 +41,16 @@ const EditModal = forwardRef(({ onOk }: Props, ref) => {
   const formRef = useRef<FormInstance>(null);
   const [msgApi] = message.useMessage();
   const [paramsList, setParamsList] = useSafeState<ParamsItem[]>([]);
-  const [tempData, setTempData] = useSafeState<Partial<Menu.UpdateDTO | Menu.CreateDTO>>();
+  const [tempData, setTempData] =
+    useSafeState<Partial<Menu.UpdateDTO | Menu.CreateDTO>>();
   const menuTree = useAppSelector((state) => state.menu.tree);
   const formFields = useMemo<FormFieldItem[]>(() => {
     return [
       {
         label: '父级菜单',
         name: 'parentId',
-        component: (
-          (value, onChange) => <TreeSelect<Menu.Item>
+        component: (value, onChange) => (
+          <TreeSelect<Menu.Item>
             options={menuTree || []}
             placeholder={'请选择父级菜单'}
             labelKey="meta.title"
@@ -72,9 +66,7 @@ const EditModal = forwardRef(({ onOk }: Props, ref) => {
         inputProps: {
           placeholder: '请输入路由名称',
         },
-        rules: [
-          { required: true, message: '请输入路由名称' },
-        ]
+        rules: [{ required: true, message: '请输入路由名称' }],
       },
       {
         label: '展示名称',
@@ -82,9 +74,7 @@ const EditModal = forwardRef(({ onOk }: Props, ref) => {
         inputProps: {
           placeholder: '请输入展示名称',
         },
-        rules: [
-          { required: true, message: '请输入展示名称' },
-        ]
+        rules: [{ required: true, message: '请输入展示名称' }],
       },
       {
         label: '文件路径',
@@ -158,53 +148,59 @@ const EditModal = forwardRef(({ onOk }: Props, ref) => {
   const close = useCallback(() => {
     dialogRef.current?.close();
   }, []);
-  const open = useCallback((title: string, data?: Partial<Menu.UpdateDTO | Menu.CreateDTO>) => {
-    if (data) {
-      setTempData(data);
-      const defaultValues: Partial<MenuType.CreateDTO | MenuType.UpdateDTO> = {
-        ...data,
-        ...data.meta || {},
-      };
-      requestAnimationFrame(() => {
-        formRef.current?.setFieldsValue(defaultValues);
-      });
-    }
-    dialogRef.current?.open(title);
-  }, [formRef.current]);
+  const open = useCallback(
+    (title: string, data?: Partial<Menu.UpdateDTO | Menu.CreateDTO>) => {
+      if (data) {
+        setTempData(data);
+        const defaultValues: Partial<MenuType.CreateDTO | MenuType.UpdateDTO> =
+          {
+            ...data,
+            ...(data.meta || {}),
+          };
+        requestAnimationFrame(() => {
+          formRef.current?.setFieldsValue(defaultValues);
+        });
+      }
+      dialogRef.current?.open(title);
+    },
+    [formRef.current],
+  );
   const handleConfirm = useCallback(() => {
     formRef.current?.submit();
   }, [tempData, formRef]);
-  const handleSubmit = useCallback(async (values: any) => {
-    let fn: Function = menuApi.add<MenuType.CreateDTO>;
-    const formData: MenuType.CreateDTO | MenuType.UpdateDTO = {
-      name: values.name,
-      path: values.path,
-      component: values.component,
-      sort: values.sort,
-      params: values.params,
-      meta: {
-        title: values.title,
-        icon: values.icon,
-        hidden: values.hidden,
-        keepAlive: values.keepAlive,
-      },
-      parentId: values.parentId,
-    };
-    if (typeof (tempData as Partial<Menu.UpdateDTO>)?.id === 'number') {
-      // 编辑
-      (formData as Menu.UpdateDTO).id = (tempData as Menu.UpdateDTO).id;
-      fn = menuApi.update<Menu.UpdateDTO>;
-    }
-    try {
-      const { msg } = await fn(formData);
-      msgApi.success(msg);
-      onOk?.();
-    } catch (e) {
-
-    } finally {
-      dialogRef.current?.close();
-    }
-  }, [tempData]);
+  const handleSubmit = useCallback(
+    async (values: any) => {
+      let fn: Function = menuApi.add<MenuType.CreateDTO>;
+      const formData: MenuType.CreateDTO | MenuType.UpdateDTO = {
+        name: values.name,
+        path: values.path,
+        component: values.component,
+        sort: values.sort,
+        params: values.params,
+        meta: {
+          title: values.title,
+          icon: values.icon,
+          hidden: values.hidden,
+          keepAlive: values.keepAlive,
+        },
+        parentId: values.parentId,
+      };
+      if (typeof (tempData as Partial<Menu.UpdateDTO>)?.id === 'number') {
+        // 编辑
+        (formData as Menu.UpdateDTO).id = (tempData as Menu.UpdateDTO).id;
+        fn = menuApi.update<Menu.UpdateDTO>;
+      }
+      try {
+        const { msg } = await fn(formData);
+        msgApi.success(msg);
+        onOk?.();
+      } catch (e) {
+      } finally {
+        dialogRef.current?.close();
+      }
+    },
+    [tempData],
+  );
   const handleAfterClose = useCallback(() => {
     // 清空
     formRef.current?.reset();
@@ -280,7 +276,7 @@ const EditModal = forwardRef(({ onOk }: Props, ref) => {
       <Button
         type={'primary'}
         icon={<Icon type={'plus'} />}
-        className={'mb-2'}
+        className={'mb-2 mt-4'}
         onClick={addParams}
       >
         新增菜单参数

@@ -1,4 +1,10 @@
-import { type ConfigEnv, defineConfig, loadEnv, ProxyOptions, type UserConfig } from 'vite';
+import {
+  type ConfigEnv,
+  defineConfig,
+  loadEnv,
+  ProxyOptions,
+  type UserConfig,
+} from 'vite';
 import react from '@vitejs/plugin-react';
 
 type ProxyItem = [string, string];
@@ -8,10 +14,10 @@ const parseConfig = (env: Record<string, string>): Record<string, any> => {
     if (env.hasOwnProperty(key)) {
       const item = env[key];
       const jsonStr = item.replace(/'/g, '"');
-      try{
+      try {
         const json = JSON.parse(jsonStr);
         res[key] = json;
-      }catch (e) {
+      } catch (e) {
         res[key] = item;
       }
     }
@@ -39,11 +45,17 @@ export default defineConfig(({ mode }: ConfigEnv): UserConfig => {
   const env = loadEnv(mode, process.cwd());
   const config = parseConfig(env);
   return {
-    plugins: [react({
-      babel: {
-        plugins: [['@babel/plugin-proposal-decorators', { legacy: true }], '@babel/plugin-proposal-class-properties', '@babel/plugin-transform-private-methods'],
-      },
-    })],
+    plugins: [
+      react({
+        babel: {
+          plugins: [
+            ['@babel/plugin-proposal-decorators', { legacy: true }],
+            '@babel/plugin-proposal-class-properties',
+            '@babel/plugin-transform-private-methods',
+          ],
+        },
+      }),
+    ],
     base: './',
     resolve: {
       alias: {

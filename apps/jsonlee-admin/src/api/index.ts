@@ -12,7 +12,8 @@ export class BaseApi {
     createTime: string;
     updateTime: string | null;
   };
-  public add = <D extends object, T = unknown>(data: D) => post<T>(this.basePath, data);
+  public add = <D extends object, T = unknown>(data: D) =>
+    post<T>(this.basePath, data);
 
   public delete = <T, I extends string | number = string>(ids: I | I[]) =>
     del<T>(`${this.basePath}/${Array.isArray(ids) ? ids.join(',') : ids}`);

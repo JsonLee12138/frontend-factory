@@ -1,6 +1,10 @@
 import emitter from './emitter';
 import { EmitterEvents } from '../enum/emitter.ts';
-import JFetch, { JFetchRequestOptions, StatusCode, ContentType } from 'jsonlee-fetch';
+import JFetch, {
+  JFetchRequestOptions,
+  StatusCode,
+  ContentType,
+} from 'jsonlee-fetch';
 import { message } from 'antd';
 import { getDeviceId } from './deviceId.ts';
 import { getAccessToken } from './token.ts';
@@ -15,14 +19,17 @@ const jftech = new JFetch({
   headers: {
     'Content-Type': ContentType.JSON,
     'X-Requested-With': 'XMLHttpRequest',
-    'X-Client-Type': 'WEB'
+    'X-Client-Type': 'WEB',
   },
   credentials: 'include',
 });
 
-jftech.requestInterceptor.use(async _config => {
+jftech.requestInterceptor.use(async (_config) => {
   setLoading();
-  const [deviceId, accessToken] = await Promise.all([getDeviceId(), getAccessToken()]);
+  const [deviceId, accessToken] = await Promise.all([
+    getDeviceId(),
+    getAccessToken(),
+  ]);
   if (deviceId) {
     _config.headers.set('X-Access-Device-Id', deviceId);
   }
@@ -40,11 +47,11 @@ jftech.requestInterceptor.use(async _config => {
   return _config;
 });
 
-jftech.responseInterceptor.use(async _response => {
+jftech.responseInterceptor.use(async (_response) => {
   return checkRes(_response);
 });
 
-jftech.errorInterceptor.use(async _err => {
+jftech.errorInterceptor.use(async (_err) => {
   if (!hasToast) {
     hasToast = true;
     switch (_err.code) {

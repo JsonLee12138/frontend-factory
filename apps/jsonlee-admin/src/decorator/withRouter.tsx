@@ -11,8 +11,13 @@ export const withRouter = <C extends ComponentType<any>>(Component: C) => {
   type Props = ComponentProps<C>;
   const WrappedComponent = (props: WithoutRouterProps<Props>) => {
     const navigate = useNavigate();
-    const RenderedComponent = Component as ComponentType<WithoutRouterProps<Props> & WithRouterProps>;
+    const RenderedComponent = Component as ComponentType<
+      WithoutRouterProps<Props> & WithRouterProps
+    >;
     return <RenderedComponent {...props} navigate={navigate} />;
   };
-  return WrappedComponent as unknown as (ComponentType<WithoutRouterProps<Props> & WithRouterProps> & C);
+  return WrappedComponent as unknown as ComponentType<
+    WithoutRouterProps<Props> & WithRouterProps
+  > &
+    C;
 };

@@ -1,17 +1,6 @@
-import { Component, createRef, forwardRef, useCallback, useRef } from 'react';
-import {
-  Button,
-  Form,
-  FormInstance,
-  Input,
-  InputNumber,
-  Modal,
-  Switch,
-  Table,
-} from 'antd';
-import Icon from '@icon-park/react/es/all';
+import { forwardRef, useCallback, useRef } from 'react';
+import { Form } from 'antd';
 // import { forwardRef } from '@/decorator/forwardRef.tsx';
-import { autoBind } from 'jsonlee-decorator/src';
 import { Menu } from '@/types/api_modules/menu.ts';
 import Dialog from '@/component/Dialog';
 import type { DialogInstance } from '../Dialog/type';

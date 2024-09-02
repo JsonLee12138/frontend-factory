@@ -1,8 +1,11 @@
-import { ConnectedProps, connect as reduxConnect } from "react-redux"
+import { ConnectedProps, connect as reduxConnect } from 'react-redux';
 import type { ComponentType, ComponentProps } from 'react';
 import { MapStateToProps } from '@/types/store.ts';
 
-export const connect = <SP = object, DP = object>(mapStateToProps?: MapStateToProps<SP>, mapDispatchToProps?: DP) => {
+export const connect = <SP = object, DP = object>(
+  mapStateToProps?: MapStateToProps<SP>,
+  mapDispatchToProps?: DP,
+) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return <C extends ComponentType<any>>(WrappedComponent: C) => {
     const connector = reduxConnect(mapStateToProps, mapDispatchToProps);
@@ -13,10 +16,11 @@ export const connect = <SP = object, DP = object>(mapStateToProps?: MapStateToPr
 
     // 重新定义组件的 props 类型
     type WrappedComponentProps = ComponentProps<C>;
-    type FinalProps = Omit<WrappedComponentProps, keyof PropsFromRedux> & Partial<PropsFromRedux>;
+    type FinalProps = Omit<WrappedComponentProps, keyof PropsFromRedux> &
+      Partial<PropsFromRedux>;
 
     Object.assign(ConnectedComponent, WrappedComponent);
 
-    return ConnectedComponent as unknown as (ComponentType<FinalProps> & C);
+    return ConnectedComponent as unknown as ComponentType<FinalProps> & C;
   };
-}
+};

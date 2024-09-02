@@ -1,4 +1,4 @@
-import { FormRule } from 'antd';
+import { type FormProps as AFormProps, FormRule, type RowProps } from 'antd';
 import { ReactNode } from 'react';
 
 export interface FormInstance {
@@ -7,16 +7,30 @@ export interface FormInstance {
   setFieldsValue: (values: Record<string, any>) => void;
 }
 
-export type FormFieldType = 'input' | 'select' | 'switch' | 'radio' | 'datePicker' | 'inputNumber';
+export type FormFieldType =
+  | 'input'
+  | 'select'
+  | 'switch'
+  | 'radio'
+  | 'datePicker'
+  | 'inputNumber';
 
 export interface FormFieldItem {
   rules?: FormRule[];
   component?: (value?: any, onChange?: (value: any) => void) => ReactNode;
-  label: string;
+  label?: string;
   type?: FormFieldType;
   name?: string;
   inputProps?: any;
   col?: number;
   value?: any;
   onChange?: (value: any) => void;
+  uniqueKey?: string;
+}
+
+export interface FormProps extends Omit<AFormProps, 'fields' | 'onFinish'> {
+  gutter?: RowProps['gutter'];
+  fields: FormFieldItem[];
+  fieldMinWidth?: number;
+  onSubmit?: AFormProps['onFinish'];
 }

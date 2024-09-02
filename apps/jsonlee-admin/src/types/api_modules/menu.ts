@@ -1,6 +1,6 @@
 import { MenuParamsType } from '@/enum/dic.ts';
 
-export namespace Menu{
+export namespace Menu {
   export interface Item {
     id: number;
     name: string;

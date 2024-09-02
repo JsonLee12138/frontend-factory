@@ -25,12 +25,13 @@ const persistedReducer = persistReducer(persistConfig, rootReducer);
 
 const store = configureStore({
   reducer: persistedReducer,
-  middleware: getDefaultMiddleware => new Tuple(...getDefaultMiddleware({ serializableCheck: false })),
+  middleware: (getDefaultMiddleware) =>
+    new Tuple(...getDefaultMiddleware({ serializableCheck: false })),
 });
 
 export const storeUseType = configureStore({
-  reducer: rootReducer
-})
+  reducer: rootReducer,
+});
 
 export const persistor = persistStore(store);
 

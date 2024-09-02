@@ -2,3 +2,11 @@
   max-height: 65vh;
   overflow-y: auto;
 }
+
+.ant-form{
+  --bottom-gap: 12px;
+  margin-bottom: calc(var(--bottom-gap) * -1);
+  .ant-form-item{
+    margin-bottom: var(--bottom-gap);
+  }
+}

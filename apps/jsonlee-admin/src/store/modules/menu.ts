@@ -11,7 +11,10 @@ const initState: MenuState = {
 };
 
 const menuApi = new MenuApi();
-export const getMenuData = createAsyncThunk('menu/getList', menuApi.getListWithoutPagination<Menu.Item>)
+export const getMenuData = createAsyncThunk(
+  'menu/getList',
+  menuApi.getListWithoutPagination<Menu.Item>,
+);
 export const menuSlice = createSlice({
   name: 'menu',
   initialState: initState,
@@ -21,12 +24,12 @@ export const menuSlice = createSlice({
       state.tree = treeBind(action.payload);
     },
   },
-  extraReducers: builder =>
-    builder.addCase(getMenuData.fulfilled, (state: MenuState, action)=> {
-      const {data} = (action.payload as unknown as Result<Menu.Item[]>)
+  extraReducers: (builder) =>
+    builder.addCase(getMenuData.fulfilled, (state: MenuState, action) => {
+      const { data } = action.payload as unknown as Result<Menu.Item[]>;
       state.flattenList = data;
       state.tree = treeBind<Menu.Item>(data);
-    })
+    }),
 });
 
 // Action creators are generated for each case reducer function

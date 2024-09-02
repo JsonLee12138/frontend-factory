@@ -6,4 +6,7 @@ export type AppDispatch = typeof store.dispatch;
 
 export type MapStateToProps<T> = (state: RootState) => T;
 
-export type ConnectedProps<SP = unknown, DP = unknown, T = unknown> = Partial<SP & DP> & T;
+export type ConnectedProps<SP = unknown, DP = unknown, T = unknown> = Partial<
+  SP & DP
+> &
+  T;

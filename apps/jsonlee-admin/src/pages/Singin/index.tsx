@@ -127,10 +127,7 @@ export const Singin = () => {
                   size={'large'}
                 />
                 {captchaAble && (
-                  <Spin
-                    spinning={captchaLoading}
-                    wrapperClassName={'h-10'}
-                  >
+                  <Spin spinning={captchaLoading} wrapperClassName={'h-10'}>
                     <Image
                       width={100}
                       height={40}

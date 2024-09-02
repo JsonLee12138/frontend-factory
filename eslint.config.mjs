@@ -18,6 +18,13 @@ export default tseslint.config(
     },
   },
   {
+    settings: {
+      'import/resolver': {
+        typescript: {},
+      },
+    },
+  },
+  {
     files: ['*.ts', '*.tsx'],
     languageOptions: {
       parser: typescriptParser,
@@ -61,6 +68,15 @@ export default tseslint.config(
           varsIgnorePattern: '^_',
           args: 'after-used',
           argsIgnorePattern: '^_',
+        },
+      ],
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          vars: 'all',
+          args: 'after-used',
+          argsIgnorePattern: '^_', // 忽略以 _ 开头的参数
+          varsIgnorePattern: '^_', // 忽略以 _ 开头的变量
         },
       ],
       'prettier/prettier': 'error',

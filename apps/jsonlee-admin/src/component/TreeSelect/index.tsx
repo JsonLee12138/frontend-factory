@@ -29,7 +29,7 @@ const TreeSelect = <T extends object = DefaultOptionType>({
         label: labelKey,
         children: childrenKey,
       },
-      true
+      true,
     );
   }, []);
   return (

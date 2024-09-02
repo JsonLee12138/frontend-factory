@@ -9,7 +9,10 @@ interface Props extends Omit<ModalProps, 'open' | 'onOk'> {
 }
 
 const Dialog = forwardRef(
-  ({ title: _title, onConfirm, afterClose, children, ...props }: Props, ref) => {
+  (
+    { title: _title, onConfirm, afterClose, children, ...props }: Props,
+    ref,
+  ) => {
     const [visible, { setFalse: setVisibleFalse, setTrue: setVisibleTrue }] =
       useBoolean(false);
     const [title, setTitle] = useSafeState<string>(_title as string);
@@ -26,10 +29,14 @@ const Dialog = forwardRef(
       title && setTitle(title);
       setVisibleTrue();
     }, []);
-    useImperativeHandle(ref, () => ({
-      open,
-      close,
-    }), []);
+    useImperativeHandle(
+      ref,
+      () => ({
+        open,
+        close,
+      }),
+      [],
+    );
     return (
       <Modal
         {...props}
