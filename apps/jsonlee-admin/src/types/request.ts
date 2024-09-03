@@ -1,4 +1,6 @@
+import { AnyObject } from './global';
+
 export interface RequestOptions extends RequestInit {
-  params?: Record<string, any>;
-  data?: Record<string, any>;
+  params?: AnyObject;
+  data?: AnyObject;
 }

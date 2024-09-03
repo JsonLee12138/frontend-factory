@@ -1,28 +1,30 @@
-import { MenuParamsType } from '@/enum/dic.ts';
+import { MenuParamsType } from '@/enum/dic';
 
-export namespace Menu {
-  export interface Item {
-    id: number;
-    name: string;
-    path: string;
-    component: string;
-    sort: number;
-    params: Params[];
-    meta: Meta;
-    parentId: number | null;
-    children: Item[];
-  }
-  export interface Meta {
-    title: string;
-    icon: string;
-    keepAlive: boolean;
-    hidden: boolean;
-  }
-  export interface Params {
-    menuId: number;
-    type: MenuParamsType;
-    key: string;
-  }
-  export type CreateDTO = Omit<Item, 'id' | 'children'>;
-  export type UpdateDTO = Omit<Item, 'children'>;
+export interface MenuItem {
+  id: number;
+  name: string;
+  path: string;
+  component: string;
+  sort: number;
+  params: MenuParams[];
+  meta: MenuMeta;
+  parentId: number | null;
+  children: MenuItem[];
 }
+
+export interface MenuMeta {
+  title: string;
+  icon: string;
+  keepAlive: boolean;
+  hidden: boolean;
+}
+
+export interface MenuParams {
+  menuId: number;
+  type: MenuParamsType;
+  key: string;
+}
+
+export type MenuCreateDTO = Omit<MenuItem, 'id' | 'children'>;
+
+export type MenuUpdateDTO = Omit<MenuItem, 'children'>;

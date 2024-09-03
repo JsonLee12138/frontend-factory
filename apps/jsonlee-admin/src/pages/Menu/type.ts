@@ -1,9 +1,6 @@
-import { Menu } from '@/types/api_modules/menu';
+import { MenuCreateDTO, MenuUpdateDTO } from '@/types/api_modules/menu';
 
 export interface EditModalRef {
-  open: (
-    title: string,
-    data?: Partial<Menu.UpdateDTO | Menu.CreateDTO>,
-  ) => void;
+  open: (title: string, data?: Partial<MenuUpdateDTO | MenuCreateDTO>) => void;
   close: () => void;
 }

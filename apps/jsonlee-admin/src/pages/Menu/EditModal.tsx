@@ -8,7 +8,6 @@ import {
 import { Button, Input, Select, Space, Table, message } from 'antd';
 import Icon from '@icon-park/react/es/all';
 import { menuParamsTypes } from '@/dic/menu';
-import { Menu as MenuType, Menu } from '@/types/api_modules/menu';
 import { MenuParamsType } from '@/enum/dic';
 import Form from '@/component/Form';
 import TreeSelect from '@/component/TreeSelect';
@@ -19,12 +18,19 @@ import Dialog from '@/component/Dialog';
 import { DialogInstance } from '@/component/Dialog/type';
 import { FormFieldItem, FormInstance } from '@/component/Form/type';
 import { MenuApi } from '@/api/modules/menu';
+import {
+  MenuCreateDTO,
+  MenuItem,
+  MenuMeta,
+  MenuParams,
+  MenuUpdateDTO,
+} from '@/types/api_modules/menu';
 
 export interface Props {
   onOk?: () => void;
 }
 
-interface ParamsItem extends Omit<Menu.Params, 'menuId' | 'type'> {
+interface ParamsItem extends Omit<MenuParams, 'menuId' | 'type'> {
   index: number;
   type: MenuParamsType | '';
 }
@@ -42,7 +48,7 @@ const EditModal = forwardRef(({ onOk }: Props, ref) => {
   const [msgApi] = message.useMessage();
   const [paramsList, setParamsList] = useSafeState<ParamsItem[]>([]);
   const [tempData, setTempData] =
-    useSafeState<Partial<Menu.UpdateDTO | Menu.CreateDTO>>();
+    useSafeState<Partial<MenuUpdateDTO | MenuCreateDTO>>();
   const menuTree = useAppSelector((state) => state.menu.tree);
   const formFields = useMemo<FormFieldItem[]>(() => {
     return [
@@ -50,7 +56,7 @@ const EditModal = forwardRef(({ onOk }: Props, ref) => {
         label: '父级菜单',
         name: 'parentId',
         component: (value, onChange) => (
-          <TreeSelect<Menu.Item>
+          <TreeSelect<MenuItem>
             options={menuTree || []}
             placeholder={'请选择父级菜单'}
             labelKey="meta.title"
@@ -128,7 +134,7 @@ const EditModal = forwardRef(({ onOk }: Props, ref) => {
         return newList;
       });
     },
-    [paramsList],
+    [setParamsList],
   );
   const addParams = useCallback(() => {
     setParamsList((prev) => {
@@ -140,40 +146,42 @@ const EditModal = forwardRef(({ onOk }: Props, ref) => {
       });
       return prev;
     });
-  }, [paramsList]);
-  const handleDeleteParams = useCallback((record: ParamsItem) => {
-    setParamsList((prev) => {
-      return prev.filter((item) => item.index !== record.index);
-    });
-  }, []);
+  }, [setParamsList]);
+  const handleDeleteParams = useCallback(
+    (record: ParamsItem) => {
+      setParamsList((prev) => {
+        return prev.filter((item) => item.index !== record.index);
+      });
+    },
+    [setParamsList],
+  );
   const close = useCallback(() => {
     dialogRef.current?.close();
   }, []);
   const open = useCallback(
-    (title: string, data?: Partial<Menu.UpdateDTO | Menu.CreateDTO>) => {
+    (title: string, data?: Partial<MenuUpdateDTO | MenuCreateDTO>) => {
       if (data) {
         setTempData(data);
-        const defaultValues: Partial<MenuType.CreateDTO | MenuType.UpdateDTO> =
-          {
-            ...data,
-            ...(data.meta || {}),
-          };
+        const defaultValues: Partial<MenuCreateDTO | MenuUpdateDTO> = {
+          ...data,
+          ...(data.meta || {}),
+        };
         requestAnimationFrame(() => {
           formRef.current?.setFieldsValue(defaultValues);
         });
       }
       dialogRef.current?.open(title);
     },
-    [formRef.current],
+    [setTempData],
   );
   const handleConfirm = useCallback(() => {
     formRef.current?.submit();
   }, [formRef]);
   const handleSubmit = useCallback(
-    async (values: MenuType.UpdateDTO & MenuType.Meta) => {
+    async (values: MenuUpdateDTO & MenuMeta) => {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-      let fn: Function = menuApi.add<MenuType.CreateDTO>;
-      const formData: MenuType.CreateDTO | MenuType.UpdateDTO = {
+      let fn: Function = menuApi.add<MenuCreateDTO>;
+      const formData: MenuCreateDTO | MenuUpdateDTO = {
         name: values.name,
         path: values.path,
         component: values.component,
@@ -187,10 +195,10 @@ const EditModal = forwardRef(({ onOk }: Props, ref) => {
         },
         parentId: values.parentId,
       };
-      if (typeof (tempData as Partial<Menu.UpdateDTO>)?.id === 'number') {
+      if (typeof (tempData as Partial<MenuUpdateDTO>)?.id === 'number') {
         // 编辑
-        (formData as Menu.UpdateDTO).id = (tempData as Menu.UpdateDTO).id;
-        fn = menuApi.update<Menu.UpdateDTO>;
+        (formData as MenuUpdateDTO).id = (tempData as MenuUpdateDTO).id;
+        fn = menuApi.update<MenuUpdateDTO>;
       }
       try {
         const { msg } = await fn(formData);
@@ -251,7 +259,7 @@ const EditModal = forwardRef(({ onOk }: Props, ref) => {
         ),
       },
     ],
-    [],
+    [handleDeleteParams, handleSetParamsList],
   );
   useImperativeHandle(
     ref,
@@ -259,7 +267,7 @@ const EditModal = forwardRef(({ onOk }: Props, ref) => {
       open,
       close,
     }),
-    [],
+    [close, open],
   );
   return (
     <Dialog

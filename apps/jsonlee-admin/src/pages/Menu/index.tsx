@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { Button, Space, Switch, message } from 'antd';
 import EditModal from '@/pages/Menu/EditModal';
-import { Menu as MenuType } from '@/types/api_modules/menu';
 import { MenuApi } from '@/api/modules/menu';
 import { getMenuData } from '@/store/modules/menu';
 import { useAppDispatch, useAppSelector } from '@/hooks/store';
@@ -9,6 +8,7 @@ import { EditModalRef } from './type';
 import Icon from '@/component/Icon';
 import ProTable from '@/component/ProTable';
 import { ColumnItem } from '@/component/ProTable/types';
+import { MenuItem } from '@/types/api_modules/menu';
 
 const menuApi = new MenuApi();
 
@@ -16,7 +16,7 @@ const Menu = () => {
   const menuTree = useAppSelector((state) => state.menu.tree);
   const dispatch = useAppDispatch();
   const editRef = useRef<EditModalRef>(null);
-  const columns = useMemo<ColumnItem<MenuType.Item>[]>(
+  const columns = useMemo<ColumnItem<MenuItem>[]>(
     () => [
       {
         title: 'id',
@@ -63,7 +63,7 @@ const Menu = () => {
       },
       {
         title: '操作',
-        render: (_, record: MenuType.Item) => (
+        render: (_, record: MenuItem) => (
           <Space>
             <Button
               type={'link'}
@@ -93,14 +93,14 @@ const Menu = () => {
   );
   const handleRefresh = useCallback(() => {
     dispatch(getMenuData());
-  }, []);
+  }, [dispatch]);
   useEffect(() => {
     dispatch(getMenuData());
   }, []);
 
   return (
     <>
-      <ProTable<MenuType.Item, unknown, false>
+      <ProTable<MenuItem, unknown, false>
         columns={columns}
         data={menuTree}
         pagination={false}

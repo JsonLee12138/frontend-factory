@@ -1,10 +1,12 @@
+import { AnyObject } from './global';
+
 export interface PageParams {
   page: number;
   pageSize: number;
   paginated: boolean;
 }
 
-export interface Result<T = any> {
+export interface Result<T = AnyObject> {
   code: number;
   data: T;
   msg: string;

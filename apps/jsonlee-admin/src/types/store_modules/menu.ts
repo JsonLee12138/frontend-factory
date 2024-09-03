@@ -1,6 +1,6 @@
-import { Menu } from '@/types/api_modules/menu.ts';
+import { MenuItem } from '../api_modules/menu';
 
 export interface MenuState {
-  tree: Menu.Item[];
-  flattenList: Menu.Item[];
+  tree: MenuItem[];
+  flattenList: MenuItem[];
 }

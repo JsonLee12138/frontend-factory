@@ -34,7 +34,7 @@ const TreeSelect = <T extends object = DefaultOptionType>({
       },
       true,
     );
-  }, []);
+  }, [childrenKey, labelKey, options, valueKey]);
   return (
     <ATreeSelect
       {...props}
