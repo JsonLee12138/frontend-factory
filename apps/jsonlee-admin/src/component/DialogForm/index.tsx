@@ -1,63 +1,82 @@
-import { forwardRef, useCallback, useRef } from 'react';
-import { Form } from 'antd';
-// import { forwardRef } from '@/decorator/forwardRef.tsx';
-import { Menu } from '@/types/api_modules/menu.ts';
+import {
+  forwardRef,
+  Ref,
+  useCallback,
+  useImperativeHandle,
+  useRef,
+} from 'react';
 import Dialog from '@/component/Dialog';
 import type { DialogInstance } from '../Dialog/type';
 import { useSafeState } from 'ahooks';
+import Form from '@/component/Form';
+import {
+  DialogFormInstance,
+  DialogFormProps,
+} from '@/component/DialogForm/type';
+import { FormInstance } from '../Form/type';
+import { AnyObject } from 'antd/es/_util/type';
 
-interface Props {
-  onConfirm?: (values: any, done: () => void) => void;
-  beforeClose?: (done: () => void) => void;
-}
-
-interface State<T = any> {
-  title: string;
-  tempData?: T;
-}
-
-const DialogForm = forwardRef(({ onConfirm }: Props, ref) => {
-  const dialogRef = useRef<DialogInstance>(null);
-  const [form] = Form.useForm();
-  const [title, setTitle] = useSafeState<string>('');
-  const [tempData, setTempData] = useSafeState<any>();
-  const open = useCallback(
-    (_title: string, data: any) => {
-      setTitle(_title);
-      setTempData(data);
-      dialogRef.current?.open();
-    },
-    [dialogRef],
-  );
-  const close = useCallback(() => {
-    dialogRef.current?.close();
-  }, [dialogRef]);
-  const handleConfirm = useCallback(async () => {
-    const valid = await form.validateFields();
-    if (valid) {
-      if (onConfirm) {
-        const formValues = form.getFieldsValue();
-        const data = tempData
-          ? { ...(tempData as unknown as Menu.UpdateDTO), ...formValues }
-          : formValues;
-        onConfirm(data, close);
-        return;
-      }
-      close();
-    }
-  }, [tempData, form, onConfirm, close]);
-  const handleAfterClose = useCallback(() => {
-    form.resetFields();
-  }, [form]);
-  return (
-    <Dialog
-      ref={dialogRef}
-      onConfirm={handleConfirm}
-      afterClose={handleAfterClose}
-    >
-      <Form form={form}></Form>
-    </Dialog>
-  );
-});
+const DialogForm = forwardRef(
+  <T = AnyObject,>(
+    { onSubmit, afterClose, fields }: DialogFormProps<T>,
+    ref: Ref<DialogFormInstance<T>>,
+  ) => {
+    const dialogRef = useRef<DialogInstance>(null);
+    const formRef = useRef<FormInstance>(null);
+    const [title, setTitle] = useSafeState<string>('');
+    const [tempData, setTempData] = useSafeState<Partial<T>>();
+    const handleOpen = useCallback(
+      (_title: string, data: Partial<T>) => {
+        setTitle(_title);
+        setTempData(data);
+        dialogRef.current?.open();
+      },
+      [dialogRef],
+    );
+    const close = useCallback(() => {
+      dialogRef.current?.close();
+    }, [dialogRef]);
+    const handleConfirm = useCallback(async () => {
+      formRef.current?.submit();
+    }, []);
+    const handleSubmit = useCallback(
+      (values: T) => {
+        if (onSubmit) {
+          const res: object = {};
+          if (tempData) {
+            Object.assign(res, tempData);
+          }
+          Object.assign(res, values);
+          onSubmit(res as T, close);
+          return;
+        }
+        close();
+      },
+      [close, onSubmit, tempData],
+    );
+    const handleAfterClose = useCallback(() => {
+      formRef.current?.reset();
+      afterClose?.();
+    }, [afterClose]);
+    useImperativeHandle(
+      ref,
+      () => ({
+        open: handleOpen,
+        close,
+      }),
+      [close, handleOpen],
+    );
+    return (
+      <Dialog
+        ref={dialogRef}
+        title={title}
+        onConfirm={handleConfirm}
+        afterClose={handleAfterClose}
+      >
+        <Form ref={formRef} fields={fields} onSubmit={handleSubmit} />
+      </Dialog>
+    );
+  },
+);
 
 export default DialogForm;

@@ -1,4 +1,5 @@
 import {
+  ChangeEventHandler,
   forwardRef,
   useCallback,
   useEffect,
@@ -16,22 +17,51 @@ import {
   Select,
   Switch,
 } from 'antd';
-import type { FormInstance } from 'antd';
-import emitter from '@/utils/emitter.ts';
-import { EmitterEvents } from '@/enum/emitter.ts';
+import type {
+  FormInstance,
+  InputNumberProps,
+  SelectProps,
+  SwitchProps,
+} from 'antd';
+import emitter from '@/utils/emitter';
+import { EmitterEvents } from '@/enum/emitter';
 import type { FormFieldItem, FormProps } from './type';
 
 const Field = ({ value, onChange, ...props }: FormFieldItem) => {
   const inputProps = props.inputProps || {};
   switch (props.type) {
-    case 'input':
-      return <Input value={value} onChange={onChange} {...inputProps} />;
+    case 'text':
+      return (
+        <Input
+          value={value as string}
+          onChange={onChange as unknown as ChangeEventHandler<HTMLInputElement>}
+          {...inputProps}
+        />
+      );
     case 'inputNumber':
-      return <InputNumber value={value} onChange={onChange} {...inputProps} />;
+      return (
+        <InputNumber
+          value={value}
+          onChange={onChange}
+          {...(inputProps as InputNumberProps)}
+        />
+      );
     case 'select':
-      return <Select value={value} onChange={onChange} {...inputProps} />;
+      return (
+        <Select
+          value={value}
+          onChange={onChange}
+          {...(inputProps as SelectProps)}
+        />
+      );
     case 'switch':
-      return <Switch value={value} onChange={onChange} {...inputProps} />;
+      return (
+        <Switch
+          value={value}
+          onChange={onChange}
+          {...(inputProps as SwitchProps)}
+        />
+      );
     default:
       if (!props.component)
         return <Input value={value} onChange={onChange} {...inputProps} />;
@@ -64,13 +94,7 @@ const Form = forwardRef(
       if (cols < 1) return 24;
       const span = Math.ceil(24 / cols);
       return Math.min(Math.max(span, 1), 24);
-    }, [wrapWidth, layout]);
-    // const perRowCount = useMemo<number>(() => {
-    //   return Math.floor(24 / fieldSpan);
-    // }, [fieldSpan])
-    // const lastRowStartIndex = useMemo<number>(() => {
-    //   return fields.length - fields.length % perRowCount;
-    // }, [perRowCount, fields])
+    }, [layout, fieldMinWidth, wrapWidth]);
     const submit = useCallback(() => {
       formRef.current?.submit();
     }, [formRef]);
@@ -81,7 +105,7 @@ const Form = forwardRef(
         reset: formRef.current?.resetFields,
         setFieldsValue: formRef.current?.setFieldsValue,
       }),
-      [],
+      [submit],
     );
     useEffect(() => {
       requestAnimationFrame(() => {
@@ -97,6 +121,7 @@ const Form = forwardRef(
     return (
       <AForm
         {...props}
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ref={formRef as any}
         scrollToFirstError={scrollToFirstError}
         layout={layout}

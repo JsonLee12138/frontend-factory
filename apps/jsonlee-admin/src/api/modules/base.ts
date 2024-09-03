@@ -1,5 +1,5 @@
-import { get, post } from '@/utils/request.ts';
-import Base from '@/types/api_modules/base.ts';
+import { get, post } from '@/utils/request';
+import Base from '@/types/api_modules/base';
 
 export const getBotCheckCode = () =>
   get<Base.GetBotCheckCodeResult, never>('/auth/bot-check');

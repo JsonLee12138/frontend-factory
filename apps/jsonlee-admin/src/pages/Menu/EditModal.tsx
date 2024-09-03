@@ -7,9 +7,9 @@ import {
 } from 'react';
 import { Button, Input, Select, Space, Table, message } from 'antd';
 import Icon from '@icon-park/react/es/all';
-import { menuParamsTypes } from '@/dic/menu.ts';
-import { Menu as MenuType, Menu } from '@/types/api_modules/menu.ts';
-import { MenuParamsType } from '@/enum/dic.ts';
+import { menuParamsTypes } from '@/dic/menu';
+import { Menu as MenuType, Menu } from '@/types/api_modules/menu';
+import { MenuParamsType } from '@/enum/dic';
 import Form from '@/component/Form';
 import TreeSelect from '@/component/TreeSelect';
 import { useSafeState } from 'ahooks';
@@ -18,7 +18,7 @@ import { cloneDeep } from 'lodash';
 import Dialog from '@/component/Dialog';
 import { DialogInstance } from '@/component/Dialog/type';
 import { FormFieldItem, FormInstance } from '@/component/Form/type';
-import { MenuApi } from '@/api/modules/menu.ts';
+import { MenuApi } from '@/api/modules/menu';
 
 export interface Props {
   onOk?: () => void;
@@ -120,6 +120,7 @@ const EditModal = forwardRef(({ onOk }: Props, ref) => {
     ];
   }, [menuTree]);
   const handleSetParamsList = useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (value: any, record: ParamsItem, key: keyof Omit<ParamsItem, 'index'>) => {
       setParamsList((prev) => {
         const newList = cloneDeep(prev);
@@ -167,9 +168,10 @@ const EditModal = forwardRef(({ onOk }: Props, ref) => {
   );
   const handleConfirm = useCallback(() => {
     formRef.current?.submit();
-  }, [tempData, formRef]);
+  }, [formRef]);
   const handleSubmit = useCallback(
-    async (values: any) => {
+    async (values: MenuType.UpdateDTO & MenuType.Meta) => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
       let fn: Function = menuApi.add<MenuType.CreateDTO>;
       const formData: MenuType.CreateDTO | MenuType.UpdateDTO = {
         name: values.name,
@@ -194,12 +196,13 @@ const EditModal = forwardRef(({ onOk }: Props, ref) => {
         const { msg } = await fn(formData);
         msgApi.success(msg);
         onOk?.();
-      } catch (e) {
+      } catch {
+        //
       } finally {
         dialogRef.current?.close();
       }
     },
-    [tempData],
+    [msgApi, onOk, tempData],
   );
   const handleAfterClose = useCallback(() => {
     // 清空

@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useMemo } from 'react';
 import { Button, Form, Image, Input, message, Spin } from 'antd';
-import { getBotCheckCode, signin } from '@/api/modules/base.ts';
-import Base from '@/types/api_modules/base.ts';
+import { getBotCheckCode, signin } from '@/api/modules/base';
+import Base from '@/types/api_modules/base';
 import { md5 } from 'js-md5';
-import { setAccessToken } from '@/store/modules/user.ts';
+import { setAccessToken } from '@/store/modules/user';
 import { useBoolean, useSafeState } from 'ahooks';
 import { useAppDispatch } from '@/hooks/store';
 import { useNavigate } from 'react-router-dom';
@@ -61,7 +61,8 @@ export const Singin = () => {
       //     formList: [...formList, captchaFormItem],
       //   });
       // }
-    } catch (error) {
+    } catch {
+      //
     } finally {
       setCaptchaLoading(false);
     }
@@ -79,7 +80,7 @@ export const Singin = () => {
         message.success('登录成功!');
         dispatch(setAccessToken(data.accessToken));
         navigate(data.defaultRouter);
-      } catch (e) {
+      } catch {
         refreshBotCheckCode();
       } finally {
         requestAnimationFrame(() => {

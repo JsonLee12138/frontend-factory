@@ -1,30 +1,68 @@
-import { type FormProps as AFormProps, FormRule, type RowProps } from 'antd';
+import type {
+  DatePickerProps,
+  FormProps as AFormProps,
+  FormRule,
+  InputProps,
+  RowProps,
+  SwitchProps,
+  InputNumberProps,
+} from 'antd';
 import { ReactNode } from 'react';
+import { TreeSelectProps } from '@/component/TreeSelect/type';
 
-export interface FormInstance {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export interface FormInstance<T = Record<string, any>> {
   submit: () => void;
   reset: () => void;
-  setFieldsValue: (values: Record<string, any>) => void;
+  setFieldsValue: (values: T) => void;
 }
 
 export type FormFieldType =
-  | 'input'
+  | 'text'
   | 'select'
   | 'switch'
   | 'radio'
   | 'datePicker'
-  | 'inputNumber';
+  | 'inputNumber'
+  | 'password'
+  | 'textarea';
 
-export interface FormFieldItem {
+export interface FieldBase {
+  placeholder?: string;
+  width?: number | string;
+}
+
+export type FieldText = FieldBase & InputProps;
+export type FieldSelect = FieldBase & unknown;
+export type FieldTreeSelect = FieldBase & TreeSelectProps;
+export type FieldDate = FieldBase & DatePickerProps;
+export type FieldSwitch = FieldBase & SwitchProps;
+
+export type FieldProps<T extends FormFieldType = 'text'> = T extends 'text'
+  ? FieldText
+  : T extends 'select'
+    ? FieldSelect
+    : T extends 'treeSelect'
+      ? FieldTreeSelect
+      : T extends 'datePicker'
+        ? FieldDate
+        : T extends 'switch'
+          ? FieldSwitch
+          : T extends 'inputNumber'
+            ? InputNumberProps
+            : never;
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export interface FormFieldItem<T = any, Type extends FormFieldType = 'text'> {
   rules?: FormRule[];
-  component?: (value?: any, onChange?: (value: any) => void) => ReactNode;
+  component?: (value?: T, onChange?: (value: T) => void) => ReactNode;
   label?: string;
   type?: FormFieldType;
   name?: string;
-  inputProps?: any;
+  inputProps?: FieldProps<Type>;
   col?: number;
-  value?: any;
-  onChange?: (value: any) => void;
+  value?: T;
+  onChange?: (value: T) => void;
   uniqueKey?: string;
 }
 

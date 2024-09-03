@@ -24,7 +24,7 @@ const Dialog = forwardRef(
     }, []);
     const handleConfirm = useCallback(() => {
       onConfirm?.(close);
-    }, [close]);
+    }, [close, onConfirm]);
     const open = useCallback((title?: string) => {
       title && setTitle(title);
       setVisibleTrue();
@@ -35,7 +35,7 @@ const Dialog = forwardRef(
         open,
         close,
       }),
-      [],
+      [close, open],
     );
     return (
       <Modal

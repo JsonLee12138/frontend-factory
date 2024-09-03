@@ -43,5 +43,12 @@ export default tseslint.config({ ignores: ['dist'] }, ...base, {
         varsIgnorePattern: '^_', // 忽略以 _ 开头的变量
       },
     ],
+    '@typescript-eslint/no-unused-expressions': [
+      'error',
+      {
+        allowTernary: true, // 这将允许未使用的表达式在三元运算符中
+        allowShortCircuit: true, // 这将允许未使用的表达式在短路运算符中
+      },
+    ],
   },
 });

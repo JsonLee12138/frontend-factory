@@ -24,10 +24,12 @@ export class BaseApi {
   public getItem = <T, I extends string | number = string>(id: I) =>
     get<T>(`${this.basePath}/${id}`);
 
-  public getList = <T, P = {}>(params: P = {} as P & Partial<PageParams>) => {
+  public getList = <T, P = object>(
+    params: P = {} as P & Partial<PageParams>,
+  ) => {
     return get<ListData<T>>(this.basePath, params as object);
   };
-  public getListWithoutPagination = <T, P = {}>(params: P = {} as P) => {
+  public getListWithoutPagination = <T, P = object>(params: P = {} as P) => {
     return get<T[]>(this.basePath, { ...params, paginated: false } as object);
   };
 }

@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react';
-import { Button, Space, Switch, Table, message, Tooltip } from 'antd';
-// import { ColumnsType } from 'antd/es/table';
+import { Button, Space, Switch, message } from 'antd';
 import EditModal from '@/pages/Menu/EditModal';
 import { Menu as MenuType } from '@/types/api_modules/menu';
 import { MenuApi } from '@/api/modules/menu';
@@ -10,7 +9,6 @@ import { EditModalRef } from './type';
 import Icon from '@/component/Icon';
 import ProTable from '@/component/ProTable';
 import { ColumnItem } from '@/component/ProTable/types';
-import { treeBind } from '@/utils/tree';
 
 const menuApi = new MenuApi();
 
@@ -29,9 +27,6 @@ const Menu = () => {
         dataIndex: 'title',
         ellipsis: true,
         render: (_, record) => <span>{record.meta?.title}</span>,
-        search: {
-          inputProps: { placeholder: '请输入标题' },
-        },
       },
       {
         title: '图标',
@@ -105,46 +100,10 @@ const Menu = () => {
 
   return (
     <>
-      <div className={'m-3 p-3 rounded bg-white shadow overflow-hidden'}>
-        <h2 className={'mb-2 text-lg font-bold'}>菜单列表</h2>
-        <div className={'flex justify-between items-center'}>
-          <Space className={'pb-3'}>
-            <Button
-              icon={<Icon name={'plus'} />}
-              type="primary"
-              onClick={() => {
-                editRef.current?.open('新增菜单');
-              }}
-            >
-              新增菜单
-            </Button>
-          </Space>
-          <Space className={'pb-3'}>
-            <Tooltip title="显示搜索">
-              <Button shape="circle" icon={<Icon name={'search'} />} />
-            </Tooltip>
-          </Space>
-        </div>
-        <Table
-          className={'border rounded'}
-          bordered={false}
-          columns={columns}
-          dataSource={menuTree}
-          rowKey={'id'}
-          pagination={false}
-        />
-      </div>
       <ProTable<MenuType.Item, unknown, false>
         columns={columns}
-        // data={menuTree}
+        data={menuTree}
         pagination={false}
-        request={menuApi.getListWithoutPagination<MenuType.Item>}
-        resultTransform={(res) => {
-          return {
-            ...res,
-            list: treeBind<MenuType.Item>(res.data),
-          };
-        }}
         buttons={[
           <Button
             key={'add'}

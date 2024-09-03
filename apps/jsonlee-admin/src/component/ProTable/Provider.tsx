@@ -47,6 +47,7 @@ const Provider = <
     data: dataSource,
     initParams,
     paramsTransform,
+    loading: _loading,
   }: ProviderProps<T, P, Paginated>,
   ref: Ref<RefInstance>,
 ) => {
@@ -190,6 +191,9 @@ const Provider = <
   useEffect(() => {
     setData(dataSource || []);
   }, [dataSource]);
+  useEffect(() => {
+    setLoading.set(!!_loading);
+  }, [_loading]);
   useEffect(() => {
     handleRefresh();
   }, []);

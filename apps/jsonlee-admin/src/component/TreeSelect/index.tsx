@@ -1,8 +1,11 @@
 import { useMemo } from 'react';
-import { TreeSelectProps } from './type.ts';
-import { TreeSelect as ATreeSelect } from 'antd';
+import { TreeSelectProps } from './type';
+import {
+  TreeSelect as ATreeSelect,
+  type TreeSelectProps as ATreeSelectProps,
+} from 'antd';
 import { DefaultOptionType } from 'antd/es/select';
-import { arrTransform } from '@/utils/arr.ts';
+import { arrTransform } from '@/utils/arr';
 
 export interface TreeOptionItem {
   label: string;
@@ -36,7 +39,7 @@ const TreeSelect = <T extends object = DefaultOptionType>({
     <ATreeSelect
       {...props}
       style={{ width: width }}
-      treeData={treeData as any}
+      treeData={treeData as ATreeSelectProps['treeData']}
       placeholder={placeholder}
       value={value}
       onChange={onChange}

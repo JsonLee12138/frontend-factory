@@ -63,6 +63,7 @@ export default defineConfig(({ mode }: ConfigEnv): UserConfig => {
       },
     },
     server: {
+      host: '::',
       proxy: createProxy(config['VITE_PROXY'] || []),
     },
   };
