@@ -1,11 +1,11 @@
 import { combineReducers, configureStore, Tuple } from '@reduxjs/toolkit';
-import loadingReducer from '@/store/modules/loading.ts';
-import userReducer from './modules/user.ts';
+import loadingReducer from '@/store/modules/loading';
+import userReducer from './modules/user';
 import { persistStore, persistReducer } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
-import encrypt from './persistTransforms/encrypt.ts';
-import stateReconciler from './stateReconciler.ts';
-import menuReducer from './modules/menu.ts';
+import encrypt from './persistTransforms/encrypt';
+import stateReconciler from './stateReconciler';
+import menuReducer from './modules/menu';
 
 const rootReducer = combineReducers({
   loading: loadingReducer,

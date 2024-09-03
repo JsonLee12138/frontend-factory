@@ -1,15 +1,15 @@
 import emitter from './emitter';
-import { EmitterEvents } from '../enum/emitter.ts';
+import { EmitterEvents } from '../enum/emitter';
 import JFetch, {
   JFetchRequestOptions,
   StatusCode,
   ContentType,
 } from 'jsonlee-fetch';
 import { message } from 'antd';
-import { getDeviceId } from './deviceId.ts';
-import { getAccessToken } from './token.ts';
+import { getDeviceId } from './deviceId';
+import { getAccessToken } from './token';
 import { Result } from '../types/api';
-import { RequestOptions } from '@/types/request.ts';
+import { RequestOptions } from '@/types/request';
 let isLoading = false;
 let hasToast = false;
 const basePath = import.meta.env.DEV ? '/api' : import.meta.env.VITE_API_URL;

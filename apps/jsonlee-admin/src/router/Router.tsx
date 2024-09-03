@@ -1,5 +1,5 @@
 import { Route, BrowserRouter as BRouter, Routes } from 'react-router-dom';
-import { staticRoutes } from './index.ts';
+import { staticRoutes } from './index';
 import { Suspense } from 'react';
 
 const Router = () => {

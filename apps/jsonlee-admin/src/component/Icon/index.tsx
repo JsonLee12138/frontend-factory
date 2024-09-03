@@ -3,7 +3,7 @@ import IconPark, {
   IconType,
   IIconAllProps,
 } from '@icon-park/react/es/all';
-import { camelCase } from '@/utils/str.ts';
+import { camelCase } from '@/utils/str';
 
 interface Props extends Omit<IIconAllProps, 'type'> {
   name: string;

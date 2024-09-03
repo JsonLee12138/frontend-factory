@@ -1,9 +1,9 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import { MenuState } from '@/types/store_modules/menu.ts';
-import { treeBind } from '@/utils/tree.ts';
-import { MenuApi } from '@/api/modules/menu.ts';
-import { Menu } from '@/types/api_modules/menu.ts';
-import { Result } from '@/types/api.ts';
+import { MenuState } from '@/types/store_modules/menu';
+import { treeBind } from '@/utils/tree';
+import { MenuApi } from '@/api/modules/menu';
+import { Result } from '@/types/api';
+import { MenuItem } from '@/types/api_modules/menu';
 
 const initState: MenuState = {
   tree: [],
@@ -13,7 +13,7 @@ const initState: MenuState = {
 const menuApi = new MenuApi();
 export const getMenuData = createAsyncThunk(
   'menu/getList',
-  menuApi.getListWithoutPagination<Menu.Item>,
+  menuApi.getListWithoutPagination<MenuItem>,
 );
 export const menuSlice = createSlice({
   name: 'menu',
@@ -26,9 +26,9 @@ export const menuSlice = createSlice({
   },
   extraReducers: (builder) =>
     builder.addCase(getMenuData.fulfilled, (state: MenuState, action) => {
-      const { data } = action.payload as unknown as Result<Menu.Item[]>;
+      const { data } = action.payload as unknown as Result<MenuItem[]>;
       state.flattenList = data;
-      state.tree = treeBind<Menu.Item>(data);
+      state.tree = treeBind<MenuItem>(data);
     }),
 });
 

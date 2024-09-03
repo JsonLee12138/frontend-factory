@@ -1,4 +1,4 @@
-import { MenuParamsType } from '@/enum/dic.ts';
+import { MenuParamsType } from '@/enum/dic';
 
 export const menuParamsTypes = [
   {

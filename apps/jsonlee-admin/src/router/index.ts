@@ -1,4 +1,4 @@
-import { RouterItem } from '../types/router.ts';
+import { RouterItem } from '../types/router';
 import PageNotFound from '@/pages/PageNotFound';
 import ForbiddenPage from '@/pages/ForbiddenPage';
 import Singin from '@/pages/Singin';
@@ -22,7 +22,7 @@ export const staticRoutes: RouterItem[] = [
       {
         path: '/menu',
         name: 'menu',
-        component: lazy(() => import('@/pages/Menu/index.tsx')),
+        component: lazy(() => import('@/pages/Menu/index')),
       },
     ],
   },

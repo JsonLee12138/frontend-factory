@@ -1,9 +1,9 @@
 import { useEffect } from 'react';
-import Router from './router/Router.tsx';
-import emitter from '@/utils/emitter.ts';
-import { EmitterEvents } from '@/enum/emitter.ts';
-import { setLoading, clearLoading } from '@/store/modules/loading.ts';
-import { useAppDispatch } from './hooks/store.ts';
+import Router from './router/Router';
+import emitter from '@/utils/emitter';
+import { EmitterEvents } from '@/enum/emitter';
+import { setLoading, clearLoading } from '@/store/modules/loading';
+import { useAppDispatch } from './hooks/store';
 
 const App = () => {
   const dispatch = useAppDispatch();

@@ -1,6 +1,6 @@
 import { ConnectedProps, connect as reduxConnect } from 'react-redux';
 import type { ComponentType, ComponentProps } from 'react';
-import { MapStateToProps } from '@/types/store.ts';
+import { MapStateToProps } from '@/types/store';
 
 export const connect = <SP = object, DP = object>(
   mapStateToProps?: MapStateToProps<SP>,

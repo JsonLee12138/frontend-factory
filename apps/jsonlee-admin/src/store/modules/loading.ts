@@ -1,5 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { LoadingState } from '@/types/store_modules/loading.ts';
+import { LoadingState } from '@/types/store_modules/loading';
 
 const initState: LoadingState = {
   loading: true,

@@ -1,13 +1,13 @@
 import { Fragment } from 'react';
 import { createRoot } from 'react-dom/client';
-import App from './App.tsx';
+import App from './App';
 import './styles/index.css';
 import './styles/antd.scss';
 import { Provider } from 'react-redux';
-import store, { persistor } from './store/index.ts';
+import store, { persistor } from './store/index';
 import '@icon-park/react/styles/index.css';
-import { EmitterEvents } from '@/enum/emitter.ts';
-import emitter from '@/utils/emitter.ts';
+import { EmitterEvents } from '@/enum/emitter';
+import emitter from '@/utils/emitter';
 import { PersistGate } from 'redux-persist/integration/react';
 import { ConfigProvider } from 'antd';
 import zhCN from 'antd/locale/zh_CN';
