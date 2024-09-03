@@ -1,19 +1,15 @@
-export namespace Base {
-  export interface GetBotCheckCodeResult {
-    id: string;
-    enable: boolean;
-    picPath: string;
-  }
-  export interface SinginDTO {
-    account: string;
-    password: string;
-    captchaId: string;
-    captcha: string;
-  }
-  export interface SinginVO {
-    accessToken: string;
-    defaultRouter: string;
-  }
+export interface GetBotCheckCodeResult {
+  id: string;
+  enable: boolean;
+  picPath: string;
 }
-
-export default Base;
+export interface SinginDTO {
+  account: string;
+  password: string;
+  captchaId: string;
+  captcha: string;
+}
+export interface SinginVO {
+  accessToken: string;
+  defaultRouter: string;
+}
