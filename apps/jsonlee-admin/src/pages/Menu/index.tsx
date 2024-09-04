@@ -16,8 +16,15 @@ const Menu = () => {
   const menuTree = useAppSelector((state) => state.menu.tree);
   const dispatch = useAppDispatch();
   const editRef = useRef<EditModalRef>(null);
+  const loading = useAppSelector((state) => state.loading.loading);
   const columns = useMemo<ColumnItem<MenuItem>[]>(
     () => [
+      {
+        key: 'expandable',
+        align: 'center',
+        width: 30,
+        render: (_, _record) => <></>,
+      },
       {
         title: 'id',
         dataIndex: 'id',
@@ -96,6 +103,7 @@ const Menu = () => {
   }, [dispatch]);
   useEffect(() => {
     dispatch(getMenuData());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -104,6 +112,21 @@ const Menu = () => {
         columns={columns}
         data={menuTree}
         pagination={false}
+        loading={loading}
+        expandable={{
+          expandRowByClick: true,
+          columnWidth: 80,
+          expandIcon: ({ expanded, onExpand, record }) =>
+            record.children && record.children.length ? (
+              expanded ? (
+                <Icon name="down" onClick={(e) => onExpand(record, e)} />
+              ) : (
+                <Icon name="right" onClick={(e) => onExpand(record, e)} />
+              )
+            ) : (
+              <></>
+            ),
+        }}
         buttons={[
           <Button
             key={'add'}

@@ -16,7 +16,7 @@ export const TooltipCol = ({ text }: TooltipBarProps) => {
     <Tooltip title={tooltipDisabled ? '' : text}>
       <div
         ref={ref}
-        className={'w-full overflow-hidden text-ellipsis whitespace-nowrap'}
+        className={'overflow-hidden text-ellipsis whitespace-nowrap'}
       >
         {text}
       </div>

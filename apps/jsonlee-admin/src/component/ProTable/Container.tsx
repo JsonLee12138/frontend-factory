@@ -10,6 +10,7 @@ const TableContainer = <T = AnyObject,>({
   tableRender,
   paginationRender,
   searchRender,
+  ...tableProps
 }: ContainerProps<T>) => {
   // state
   const {
@@ -40,6 +41,7 @@ const TableContainer = <T = AnyObject,>({
               ]}
         </div>
         {tableRender?.({
+          ...tableProps,
           columns,
           dataSource: data,
           loading,

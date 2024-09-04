@@ -25,6 +25,7 @@ import {
   MenuParams,
   MenuUpdateDTO,
 } from '@/types/api_modules/menu';
+import PagePathInput from '@/component/PagePathInput';
 
 export interface Props {
   onOk?: () => void;
@@ -84,10 +85,14 @@ const EditModal = forwardRef(({ onOk }: Props, ref) => {
       },
       {
         label: '文件路径',
+        warning: '如果是有子菜单并且是展示在layout下面的请填写layout!',
         name: 'component',
         inputProps: {
           placeholder: '请输入文件路径',
         },
+        component: (value, onChange) => (
+          <PagePathInput value={value} onChange={onChange} />
+        ),
       },
       {
         label: '图标',

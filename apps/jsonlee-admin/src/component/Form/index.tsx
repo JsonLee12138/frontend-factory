@@ -26,6 +26,7 @@ import type {
 import emitter from '@/utils/emitter';
 import { EmitterEvents } from '@/enum/emitter';
 import type { FormFieldItem, FormProps } from './type';
+import Label from './Label';
 
 const Field = ({ value, onChange, ...props }: FormFieldItem) => {
   const inputProps = props.inputProps || {};
@@ -136,7 +137,7 @@ const Form = forwardRef(
                 <AForm.Item
                   name={field.name}
                   rules={field.rules}
-                  label={field.label}
+                  label={<Label label={field.label} warning={field.warning} />}
                   colon={colon}
                   labelAlign={labelAlign}
                 >

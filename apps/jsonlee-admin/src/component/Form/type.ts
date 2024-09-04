@@ -9,9 +9,9 @@ import type {
 } from 'antd';
 import { ReactNode } from 'react';
 import { TreeSelectProps } from '@/component/TreeSelect/type';
+import { AnyObject } from '@/types/global';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export interface FormInstance<T = Record<string, any>> {
+export interface FormInstance<T = AnyObject> {
   submit: () => void;
   reset: () => void;
   setFieldsValue: (values: T) => void;
@@ -56,7 +56,8 @@ export type FieldProps<T extends FormFieldType = 'text'> = T extends 'text'
 export interface FormFieldItem<T = any, Type extends FormFieldType = 'text'> {
   rules?: FormRule[];
   component?: (value?: T, onChange?: (value: T) => void) => ReactNode;
-  label?: string;
+  label?: ReactNode;
+  warning?: ReactNode;
   type?: FormFieldType;
   name?: string;
   inputProps?: FieldProps<Type>;
@@ -72,3 +73,5 @@ export interface FormProps extends Omit<AFormProps, 'fields' | 'onFinish'> {
   fieldMinWidth?: number;
   onSubmit?: AFormProps['onFinish'];
 }
+
+export type LabelProps = Pick<FormFieldItem, 'label' | 'warning'>;

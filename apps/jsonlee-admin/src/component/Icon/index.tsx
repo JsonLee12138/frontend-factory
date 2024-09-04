@@ -9,9 +9,9 @@ interface Props extends Omit<IIconAllProps, 'type'> {
   name: string;
 }
 
-const Icon = ({ name, children }: Props) => {
+const Icon = ({ name, children, ...props }: Props) => {
   if (ALL_ICON_KEYS.includes(camelCase(name, true) as IconType)) {
-    return <IconPark type={name} />;
+    return <IconPark type={name} {...props} />;
   }
   return <>{children}</>;
 };

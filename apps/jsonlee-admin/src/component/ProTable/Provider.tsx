@@ -76,6 +76,7 @@ const Provider = <
         // 设置宽度, 根据表头的宽度来自列的width属性
         return {
           ...columnProps,
+          width: _width,
           title: <div className={'w-max'}>{title as string}</div>,
           ellipsis,
           render: (text: string, record: T, index: number) => {
@@ -190,10 +191,10 @@ const Provider = <
   // effect
   useEffect(() => {
     setData(dataSource || []);
-  }, [dataSource]);
+  }, [dataSource, setData]);
   useEffect(() => {
     setLoading.set(!!_loading);
-  }, [_loading]);
+  }, [_loading, setLoading]);
   useEffect(() => {
     handleRefresh();
   }, []);

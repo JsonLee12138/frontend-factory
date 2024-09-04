@@ -7,17 +7,19 @@ import {
 } from 'vite';
 import react from '@vitejs/plugin-react';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AnyObject = Record<string, any>;
 type ProxyItem = [string, string];
-const parseConfig = (env: Record<string, string>): Record<string, any> => {
-  const res: Record<string, any> = {};
+const parseConfig = (env: Record<string, string>): AnyObject => {
+  const res: AnyObject = {};
   for (const key in env) {
-    if (env.hasOwnProperty(key)) {
+    if (Object.prototype.hasOwnProperty.call(env, key)) {
       const item = env[key];
       const jsonStr = item.replace(/'/g, '"');
       try {
         const json = JSON.parse(jsonStr);
         res[key] = json;
-      } catch (e) {
+      } catch {
         res[key] = item;
       }
     }
