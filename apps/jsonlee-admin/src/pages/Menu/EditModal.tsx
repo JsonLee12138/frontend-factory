@@ -1,6 +1,7 @@
 import {
   forwardRef,
   useCallback,
+  useEffect,
   useImperativeHandle,
   useMemo,
   useRef,
@@ -26,6 +27,7 @@ import {
   MenuUpdateDTO,
 } from '@/types/api_modules/menu';
 import PagePathInput from '@/component/PagePathInput';
+import { IconPark, SelectIconPark } from 'jsonlee-ui-react';
 
 export interface Props {
   onOk?: () => void;
@@ -46,6 +48,8 @@ const menuApi = new MenuApi();
 const EditModal = forwardRef(({ onOk }: Props, ref) => {
   const dialogRef = useRef<DialogInstance>(null);
   const formRef = useRef<FormInstance>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const selectIconRef = useRef<any>(null);
   const [msgApi] = message.useMessage();
   const [paramsList, setParamsList] = useSafeState<ParamsItem[]>([]);
   const [tempData, setTempData] =
@@ -100,6 +104,25 @@ const EditModal = forwardRef(({ onOk }: Props, ref) => {
         inputProps: {
           placeholder: '请选择图标',
         },
+        component: (value, onChange) => (
+          <>
+            <Button
+              icon={<IconPark name={value} />}
+              onClick={() => {
+                selectIconRef.current?.open();
+              }}
+            ></Button>
+            <SelectIconPark
+              width="80%"
+              value={value}
+              maskClosable={false}
+              onChange={(v: string) => {
+                onChange?.(v);
+              }}
+              ref={selectIconRef}
+            ></SelectIconPark>
+          </>
+        ),
       },
       {
         label: '是否隐藏',
@@ -266,6 +289,11 @@ const EditModal = forwardRef(({ onOk }: Props, ref) => {
     ],
     [handleDeleteParams, handleSetParamsList],
   );
+  // useEffect
+  useEffect(() => {
+    return () => {};
+  }, [selectIconRef]);
+  // export
   useImperativeHandle(
     ref,
     () => ({
@@ -275,35 +303,37 @@ const EditModal = forwardRef(({ onOk }: Props, ref) => {
     [close, open],
   );
   return (
-    <Dialog
-      ref={dialogRef}
-      afterClose={handleAfterClose}
-      onCancel={close}
-      onConfirm={handleConfirm}
-      width={'50%'}
-    >
-      <Form
-        layout={'vertical'}
-        fields={formFields}
-        ref={formRef}
-        onSubmit={handleSubmit}
-        initialValues={initFormData}
-      ></Form>
-      <Button
-        type={'primary'}
-        icon={<Icon type={'plus'} />}
-        className={'mb-2 mt-4'}
-        onClick={addParams}
+    <>
+      <Dialog
+        ref={dialogRef}
+        afterClose={handleAfterClose}
+        onCancel={close}
+        onConfirm={handleConfirm}
+        width={'50%'}
       >
-        新增菜单参数
-      </Button>
-      <Table
-        columns={paramsColumns}
-        pagination={false}
-        dataSource={paramsList}
-        rowKey={(_record) => _record.index}
-      ></Table>
-    </Dialog>
+        <Form
+          layout={'vertical'}
+          fields={formFields}
+          ref={formRef}
+          onSubmit={handleSubmit}
+          initialValues={initFormData}
+        ></Form>
+        <Button
+          type={'primary'}
+          icon={<Icon type={'plus'} />}
+          className={'mb-2 mt-4'}
+          onClick={addParams}
+        >
+          新增菜单参数
+        </Button>
+        <Table
+          columns={paramsColumns}
+          pagination={false}
+          dataSource={paramsList}
+          rowKey={(_record) => _record.index}
+        ></Table>
+      </Dialog>
+    </>
   );
 });
 

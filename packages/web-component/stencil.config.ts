@@ -1,7 +1,22 @@
 import { Config } from '@stencil/core';
+import tailwind, { tailwindHMR, setPluginConfigurationDefaults } from 'stencil-tailwind-plugin';
+import tailwindConf from './tailwind.config';
+import tailwindcss from 'tailwindcss';
+import autoprefixer from 'autoprefixer';
+
+setPluginConfigurationDefaults({
+  tailwindConf,
+  tailwindCssPath: './src/styles/tailwind.css',
+  postcss: {
+    plugins: [
+      tailwindcss(),
+      autoprefixer()
+    ]
+  }
+});
 
 export const config: Config = {
-  namespace: 'web-component',
+  namespace: 'json-web-component',
   outputTargets: [
     {
       type: 'dist',
@@ -23,4 +38,12 @@ export const config: Config = {
   testing: {
     browserHeadless: "new",
   },
+  devServer: {
+    openBrowser: false,
+    reloadStrategy: 'pageReload'
+  },
+  plugins: [
+    tailwind(),
+    tailwindHMR(),
+  ]
 };

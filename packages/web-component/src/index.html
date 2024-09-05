@@ -1,14 +1,49 @@
 <!DOCTYPE html>
 <html dir="ltr" lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0" />
-    <title>Stencil Component Starter</title>
 
-    <script type="module" src="/build/web-component.esm.js"></script>
-    <script nomodule src="/build/web-component.js"></script>
-  </head>
-  <body>
-    <my-component first="Stencil" last="'Don't call me a framework' JS"></my-component>
-  </body>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0" />
+  <title>Stencil Component Starter</title>
+  <!-- <link href="/build/tailwind.css" type="stylesheet" /> -->
+  <script type="module" src="/build/json-web-component.esm.js"></script>
+  <script nomodule src="/build/json-web-component.js"></script>
+</head>
+
+<body>
+  <my-component first="Stencil" last="'Don't call me a framework' JS"></my-component>
+  <icon-park name="thinking-problem">--</icon-park>
+  <select-iconpark id="test" mask-closeable="false" header="12312"></select-iconpark>
+
+  <script>
+    window.addEventListener('load', () => {
+      requestAnimationFrame(() => {
+        test();
+      })
+    })
+    const test = async () => {
+      const a = document.getElementById('test');
+      // a.setAttribute('change', (e)=> {
+      //   console.log(e, "...");
+
+      // })
+      a.onchange = (e)=> {
+        console.log(e.detail, '....')
+      }
+      await a.open();
+    }
+    // window.addEventListener('load', async () => {
+    //   const myComponent = document.querySelector('select-iconpark');
+    //   if (myComponent) {
+    //     console.log(myComponent,myComponent.open);
+    //     requestAnimationFrame(async ()=> {
+    //       await myComponent?.open(); // 调用方法
+    //     })
+    //   } else {
+    //     console.error('Component not found');
+    //   }
+    // });
+  </script>
+</body>
+
 </html>

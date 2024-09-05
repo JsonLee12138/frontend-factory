@@ -12,6 +12,7 @@ import { PersistGate } from 'redux-persist/integration/react';
 import { ConfigProvider } from 'antd';
 import zhCN from 'antd/locale/zh_CN';
 import 'dayjs/locale/zh-cn';
+import 'jsonlee-ui-react/dist/styles/style.css';
 
 window.onresize = () => {
   emitter.emit(EmitterEvents.RESIZE);

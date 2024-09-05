@@ -1,10 +1,11 @@
 import { Layout as AntdLayout, Menu } from 'antd';
 import { Outlet } from 'react-router-dom';
-import Icon from '@icon-park/react/es/all';
+// import Icon from '@icon-park/react/es/all';
 import { treeBind, treeOmit } from '@/utils/tree';
 import { ItemType, MenuItemType } from 'antd/es/menu/interface';
 import { useBoolean } from 'ahooks';
 import { useMemo } from 'react';
+import { IconPark } from 'jsonlee-ui-react';
 
 const { Header, Footer, Sider, Content } = AntdLayout;
 
@@ -43,7 +44,7 @@ const Layout = () => {
           items.map((item) => ({
             ...item,
             key: item.id,
-            icon: item.icon ? <Icon type={item.icon} /> : null,
+            icon: item.icon ? <IconPark name={item.icon} /> : null,
           })),
         ),
         ['parentId'],
@@ -75,8 +76,8 @@ const Layout = () => {
             'h-14 flex justify-between bg-white shadow items-center px-4 py-0'
           }
         >
-          <Icon
-            type={collapsed ? 'menu-fold-one' : 'menu-unfold-one'}
+          <IconPark
+            name={collapsed ? 'menu-fold-one' : 'menu-unfold-one'}
             className="text-xl"
             onClick={collapsedToggle}
           />

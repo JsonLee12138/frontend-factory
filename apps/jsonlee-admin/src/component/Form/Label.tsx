@@ -7,7 +7,7 @@ const Label = ({ label, warning }: LabelProps) => {
     <span>
       {label}
       {warning && (
-        <Tooltip title={warning} trigger={'hover'}>
+        <Tooltip title={warning}>
           <Icon
             className={'ml-1.5 cursor-pointer'}
             name="help"

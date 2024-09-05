@@ -5,7 +5,41 @@
  * It contains typing information for all components that exist in this project.
  */
 import { HTMLStencilElement, JSXBase } from "@stencil/core/internal";
+import { ISvgIconProps, Theme } from "@icon-park/svg/lib/runtime";
+export { ISvgIconProps, Theme } from "@icon-park/svg/lib/runtime";
 export namespace Components {
+    interface IconPark {
+        "class": string;
+        "cusLoad": boolean;
+        "fill": string | string[];
+        "load": () => Promise<void>;
+        "name": string;
+        "size": number | string;
+        "spin": boolean;
+        "strokeLinecap": ISvgIconProps['strokeLinecap'];
+        "strokeLinejoin": ISvgIconProps['strokeLinejoin'];
+        "strokeWidth": ISvgIconProps['strokeWidth'];
+        "theme": Theme;
+    }
+    interface JsonAutocomplete {
+    }
+    interface JsonDialog {
+        "cancelText": string;
+        "close": () => Promise<void>;
+        "confirmText": string;
+        "escCloseable": boolean;
+        "header": string;
+        "maskClosable": boolean;
+        "maxHeight": string;
+        "open": () => Promise<void>;
+        "show": boolean;
+        "showClose": boolean;
+        "showDivider": boolean;
+        "showFooter": boolean;
+        "showMask": boolean;
+        "top": string;
+        "width": string;
+    }
     interface MyComponent {
         /**
           * The first name
@@ -20,19 +54,122 @@ export namespace Components {
          */
         "middle": string;
     }
+    interface SelectIconpark {
+        "close": () => Promise<void>;
+        "escCloseable": boolean;
+        "header": string;
+        "maskClosable": boolean;
+        "maxHeight": string;
+        "open": () => Promise<void>;
+        "show": boolean;
+        "showClose": boolean;
+        "showDivider": boolean;
+        "showFooter": boolean;
+        "top": string;
+        "value": string;
+        "width": string;
+    }
+}
+export interface JsonDialogCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLJsonDialogElement;
+}
+export interface SelectIconparkCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLSelectIconparkElement;
 }
 declare global {
+    interface HTMLIconParkElement extends Components.IconPark, HTMLStencilElement {
+    }
+    var HTMLIconParkElement: {
+        prototype: HTMLIconParkElement;
+        new (): HTMLIconParkElement;
+    };
+    interface HTMLJsonAutocompleteElement extends Components.JsonAutocomplete, HTMLStencilElement {
+    }
+    var HTMLJsonAutocompleteElement: {
+        prototype: HTMLJsonAutocompleteElement;
+        new (): HTMLJsonAutocompleteElement;
+    };
+    interface HTMLJsonDialogElementEventMap {
+        "afterClose": undefined;
+    }
+    interface HTMLJsonDialogElement extends Components.JsonDialog, HTMLStencilElement {
+        addEventListener<K extends keyof HTMLJsonDialogElementEventMap>(type: K, listener: (this: HTMLJsonDialogElement, ev: JsonDialogCustomEvent<HTMLJsonDialogElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLJsonDialogElementEventMap>(type: K, listener: (this: HTMLJsonDialogElement, ev: JsonDialogCustomEvent<HTMLJsonDialogElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+    }
+    var HTMLJsonDialogElement: {
+        prototype: HTMLJsonDialogElement;
+        new (): HTMLJsonDialogElement;
+    };
     interface HTMLMyComponentElement extends Components.MyComponent, HTMLStencilElement {
     }
     var HTMLMyComponentElement: {
         prototype: HTMLMyComponentElement;
         new (): HTMLMyComponentElement;
     };
+    interface HTMLSelectIconparkElementEventMap {
+        "change": string;
+    }
+    interface HTMLSelectIconparkElement extends Components.SelectIconpark, HTMLStencilElement {
+        addEventListener<K extends keyof HTMLSelectIconparkElementEventMap>(type: K, listener: (this: HTMLSelectIconparkElement, ev: SelectIconparkCustomEvent<HTMLSelectIconparkElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLSelectIconparkElementEventMap>(type: K, listener: (this: HTMLSelectIconparkElement, ev: SelectIconparkCustomEvent<HTMLSelectIconparkElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+    }
+    var HTMLSelectIconparkElement: {
+        prototype: HTMLSelectIconparkElement;
+        new (): HTMLSelectIconparkElement;
+    };
     interface HTMLElementTagNameMap {
+        "icon-park": HTMLIconParkElement;
+        "json-autocomplete": HTMLJsonAutocompleteElement;
+        "json-dialog": HTMLJsonDialogElement;
         "my-component": HTMLMyComponentElement;
+        "select-iconpark": HTMLSelectIconparkElement;
     }
 }
 declare namespace LocalJSX {
+    interface IconPark {
+        "class"?: string;
+        "cusLoad"?: boolean;
+        "fill"?: string | string[];
+        "name"?: string;
+        "size"?: number | string;
+        "spin"?: boolean;
+        "strokeLinecap"?: ISvgIconProps['strokeLinecap'];
+        "strokeLinejoin"?: ISvgIconProps['strokeLinejoin'];
+        "strokeWidth"?: ISvgIconProps['strokeWidth'];
+        "theme"?: Theme;
+    }
+    interface JsonAutocomplete {
+    }
+    interface JsonDialog {
+        "cancelText"?: string;
+        "confirmText"?: string;
+        "escCloseable"?: boolean;
+        "header"?: string;
+        "maskClosable"?: boolean;
+        "maxHeight"?: string;
+        "onAfterClose"?: (event: JsonDialogCustomEvent<undefined>) => void;
+        "show"?: boolean;
+        "showClose"?: boolean;
+        "showDivider"?: boolean;
+        "showFooter"?: boolean;
+        "showMask"?: boolean;
+        "top"?: string;
+        "width"?: string;
+    }
     interface MyComponent {
         /**
           * The first name
@@ -47,15 +184,37 @@ declare namespace LocalJSX {
          */
         "middle"?: string;
     }
+    interface SelectIconpark {
+        "escCloseable"?: boolean;
+        "header"?: string;
+        "maskClosable"?: boolean;
+        "maxHeight"?: string;
+        "onChange"?: (event: SelectIconparkCustomEvent<string>) => void;
+        "show"?: boolean;
+        "showClose"?: boolean;
+        "showDivider"?: boolean;
+        "showFooter"?: boolean;
+        "top"?: string;
+        "value"?: string;
+        "width"?: string;
+    }
     interface IntrinsicElements {
+        "icon-park": IconPark;
+        "json-autocomplete": JsonAutocomplete;
+        "json-dialog": JsonDialog;
         "my-component": MyComponent;
+        "select-iconpark": SelectIconpark;
     }
 }
 export { LocalJSX as JSX };
 declare module "@stencil/core" {
     export namespace JSX {
         interface IntrinsicElements {
+            "icon-park": LocalJSX.IconPark & JSXBase.HTMLAttributes<HTMLIconParkElement>;
+            "json-autocomplete": LocalJSX.JsonAutocomplete & JSXBase.HTMLAttributes<HTMLJsonAutocompleteElement>;
+            "json-dialog": LocalJSX.JsonDialog & JSXBase.HTMLAttributes<HTMLJsonDialogElement>;
             "my-component": LocalJSX.MyComponent & JSXBase.HTMLAttributes<HTMLMyComponentElement>;
+            "select-iconpark": LocalJSX.SelectIconpark & JSXBase.HTMLAttributes<HTMLSelectIconparkElement>;
         }
     }
 }

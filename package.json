@@ -3,6 +3,8 @@
   "packageManager": "yarn@4.4.0",
   "scripts": {
     "dev:admin": "yarn workspace jsonlee-admin dev",
+    "dev:react-test": "yarn workspace react-test dev",
+    "dev:component": "yarn workspace json-web-component start",
     "commit": "git-cz",
     "lint": "eslint .",
     "fix": "eslint --fix ."
