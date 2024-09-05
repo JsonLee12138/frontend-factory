@@ -15,29 +15,29 @@ export default [
   {
     input: 'src/index.ts',
     output: [
-      {
-        file: packageJson.main,
-        format: 'cjs',
-        sourcemap: true,
-        plugins: [terser()],
-      },
+      // {
+      //   file: packageJson.main,
+      //   format: 'cjs',
+      //   sourcemap: true,
+      //   plugins: [terser()],
+      // },
       {
         file: packageJson.module,
         format: 'esm',
         sourcemap: true,
         plugins: [terser()],
       },
-      {
-        file: packageJson.browser,
-        format: 'umd',
-        name: 'JsonUIReact',
-        globals: {
-          react: 'React',
-          'react-dom': 'ReactDOM',
-        },
-        sourcemap: true,
-        plugins: [terser()],
-      },
+      // {
+      //   file: packageJson.browser,
+      //   format: 'umd',
+      //   name: 'JsonUIReact',
+      //   globals: {
+      //     react: 'React',
+      //     'react-dom': 'ReactDOM',
+      //   },
+      //   sourcemap: true,
+      //   plugins: [terser()],
+      // },
     ],
     plugins: [
       del({ targets: 'dist/*' }),

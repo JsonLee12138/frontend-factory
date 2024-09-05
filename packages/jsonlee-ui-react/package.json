@@ -1,9 +1,8 @@
 {
   "name": "jsonlee-ui-react",
+  "version": "1.0.0",
   "packageManager": "yarn@4.4.0",
-  "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
-  "browser": "dist/umd/index.js",
   "types": "dist/types/index.d.ts",
   "type": "module",
   "scripts": {
@@ -18,12 +17,24 @@
     "rollup-plugin-dts": "^6.1.1"
   },
   "files": [
-    "dist/cjs",
-    "dist/esm",
-    "dist/umd",
-    "dist/types",
+    "dist",
     "!dist/**/*.map"
   ],
+  "keywords": [
+    "antd",
+    "ant design",
+    "react",
+    "icon",
+    "iconpark",
+    "react hooks",
+    "tailwind"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/JsonLee12138/frontend-factory/tree/main/packages/jsonlee-ui-react"
+  },
+  "author": "",
+  "license": "ISC",
   "devDependencies": {
     "@babel/core": "^7.25.2",
     "@babel/preset-env": "^7.25.4",
