@@ -6,7 +6,8 @@ import { getMenuData } from '@/store/modules/menu';
 import { useAppDispatch, useAppSelector } from '@/hooks/store';
 import { EditModalRef } from './type';
 import Icon from '@/component/Icon';
-import ProTable from '@/component/ProTable';
+// import ProTable from '@/component/ProTable';
+import { ProTable } from 'jsonlee-ui-react';
 import { ColumnItem } from '@/component/ProTable/types';
 import { MenuItem } from '@/types/api_modules/menu';
 
@@ -119,7 +120,7 @@ const Menu = () => {
           expandIcon: ({ expanded, onExpand, record }) =>
             record.children && record.children.length ? (
               expanded ? (
-                <Icon name="down" onClick={(e) => onExpand(record, e)} />
+                <Icon name="down" />
               ) : (
                 <Icon name="right" onClick={(e) => onExpand(record, e)} />
               )

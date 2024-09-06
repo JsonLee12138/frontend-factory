@@ -1,16 +1,16 @@
-import { ProTableInstance, ProTableProps, ScrollToProps } from './types';
+import type { ProTableInstance, ProTableProps, ScrollToProps, PageParams } from '@/types/protable';
 import { AnyObject } from 'antd/es/_util/type';
-import { PageParams } from '@/types/api';
 import Provider from './Provider';
 import TableContainer from './Container';
 import SearchBar from './SearchBar';
 import { Pagination } from 'antd';
 import TableMain from './Main';
-import { objOmit } from '@/utils/obj';
+import { objOmit } from 'jsonlee-utils';
 import {
   forwardRef,
   ReactNode,
   Ref,
+  RefAttributes,
   useCallback,
   useImperativeHandle,
   useMemo,
@@ -18,8 +18,11 @@ import {
 } from 'react';
 import { TableRef } from 'antd/es/table';
 import Buttons from './Buttons';
-import Container from './Container';
+import { TooltipCol } from './TableCol';
+import Title from './Title';
+import ToolBar from './ToolBar';
 
+// eslint-disable-next-line react-refresh/only-export-components
 const ProTable = <
   T = AnyObject,
   P = PageParams,
@@ -73,31 +76,32 @@ const ProTable = <
   );
 };
 
-// export default forwardRef(ProTable) as unknown as <
-//   T = AnyObject,
-//   P = PageParams,
-//   Paginated extends boolean = true,
-// >(
-//   props: ProTableProps<T, P, Paginated> & { ref?: Ref<ProTableInstance> },
-// ) => ReactNode;
-
-interface ProTableWithRefType<T, P, Paginated extends boolean = false> {
-  (
-    props: ProTableProps<T, P, Paginated> & { ref?: Ref<ProTableInstance> },
-  ): ReactNode;
+interface ProTableWithChild {
   Buttons: typeof Buttons;
-  Container: typeof Container;
+  Container: typeof TableContainer;
   Provider: typeof Provider;
+  Table: typeof TableMain;
+  Search: typeof SearchBar;
+  Col: typeof TooltipCol;
+  Title: typeof Title;
+  Tools: typeof ToolBar;
 }
 
-const Table = forwardRef(ProTable) as unknown as (<
-  T = AnyObject,
-  P = PageParams,
-  Paginated extends boolean = true,
+const ProTableWithRef = forwardRef(ProTable) as unknown as (<
+T = AnyObject,
+P = PageParams,
+Paginated extends boolean = true,
 >(
-  props: ProTableProps<T, P, Paginated> & { ref?: Ref<ProTableInstance> },
-) => ReactNode) &
-  ProTableWithRefType<unknown, unknown>;
+props: ProTableProps<T, P, Paginated> & RefAttributes<ProTableInstance>,
+) => ReactNode) & ProTableWithChild;
 
-Table.Buttons = Buttons;
-export default Table;
+ProTableWithRef.Buttons = Buttons;
+ProTableWithRef.Container = TableContainer;
+ProTableWithRef.Provider = Provider;
+ProTableWithRef.Table = TableMain;
+ProTableWithRef.Search = SearchBar;
+ProTableWithRef.Col = TooltipCol;
+ProTableWithRef.Title = Title;
+ProTableWithRef.Tools = ToolBar;
+
+export default ProTableWithRef;

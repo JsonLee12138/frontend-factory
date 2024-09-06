@@ -1,6 +1,6 @@
 {
   "name": "jsonlee-utils",
-  "version": "0.0.9",
+  "version": "1.0.0",
   "packageManager": "yarn@4.4.0",
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",

@@ -1,4 +1,5 @@
 # jsonlee-ui-react
+[English Document](https://github.com/JsonLee12138/frontend-factory/blob/main/packages/jsonlee-ui-react/README.en.md)
 
 ### 介绍
 
@@ -15,8 +16,14 @@ import 'jsonlee-ui-react/dist/styles/style.css';
 
 ### 当前支持的组件
 
-- **Dialog** [文档](https://github.com/JsonLee12138/frontend-factory/tree/main/packages/jsonlee-ui-react/src/component/Dialog)
+- **Dialog** [文档](https://github.com/JsonLee12138/frontend-factory/blob/main/packages/jsonlee-ui-react/src/component/Dialog/README.md)
 
-- **IconPark** [文档](https://github.com/JsonLee12138/frontend-factory/tree/main/packages/jsonlee-ui-react/src/component/IconPark)
+- **IconPark** [文档](https://github.com/JsonLee12138/frontend-factory/tree/main/packages/jsonlee-ui-react/src/component/IconPark/README.md)
 
-- **SelectIconPark** [文档](https://github.com/JsonLee12138/frontend-factory/tree/main/packages/jsonlee-ui-react/src/component/SelectIconPark)
+- **SelectIconPark** [文档](https://github.com/JsonLee12138/frontend-factory/tree/main/packages/jsonlee-ui-react/src/component/SelectIconPark/README.md)
+
+- **Form** [文档](https://github.com/JsonLee12138/frontend-factory/tree/main/packages/jsonlee-ui-react/src/component/Form/README.md)
+
+- **TreeSelect** [文档](https://github.com/JsonLee12138/frontend-factory/tree/main/packages/jsonlee-ui-react/src/component/TreeSelect/README.md)
+
+- **ProTable** [文档](https://github.com/JsonLee12138/frontend-factory/tree/main/packages/jsonlee-ui-react/src/component/ProTable/README.md)
