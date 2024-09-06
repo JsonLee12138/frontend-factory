@@ -6,7 +6,7 @@ export const getDeviceId = async () => {
     const deviceId = fingerRes.visitorId;
     localStorage.setItem('deviceId', deviceId);
     return deviceId;
-  } catch (error) {
+  } catch {
     return Promise.resolve('');
   }
 };

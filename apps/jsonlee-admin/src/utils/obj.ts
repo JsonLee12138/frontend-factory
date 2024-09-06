@@ -1,3 +1,5 @@
+import { AnyObject } from '@/types/global';
+
 type KeyConfig = {
   source: string;
   target: string;
@@ -11,10 +13,7 @@ type KeyConfig = {
  * @param childrenKey {source: 'children', target: 'children'}
  * @returns
  */
-export const obj = <
-  S extends Record<string, any>[],
-  T extends Record<string, any>,
->(
+export const obj = <S extends AnyObject[], T extends AnyObject>(
   data: S,
   format: Record<string, string>,
   deep?: boolean,
@@ -24,7 +23,7 @@ export const obj = <
   },
 ): T[] => {
   return data.map((item) => {
-    const obj: Record<string, any> = { ...item };
+    const res: AnyObject = { ...item };
     const targetKeys = Object.keys(format);
     for (let i = 0, len = targetKeys.length; i < len; i++) {
       const targetKey = targetKeys[i];
@@ -33,9 +32,9 @@ export const obj = <
         deep &&
         sourceKey === childrenKey.source &&
         item[childrenKey.source] &&
-        item[childrenKey.source].length > 0
+        item[childrenKey.source].length
       ) {
-        obj[childrenKey.target] = obj(
+        res[childrenKey.target] = obj(
           item[childrenKey.source],
           format,
           deep,
@@ -43,19 +42,19 @@ export const obj = <
         );
         continue;
       }
-      obj[targetKey] = item[sourceKey];
+      res[targetKey] = item[sourceKey];
     }
-    return obj as T;
+    return res as T;
   });
 };
 
-export const objOmit = <T extends Record<string, any>>(
+export const objOmit = <T extends AnyObject>(
   data: T,
   keys: (keyof T)[],
 ): Omit<T, (typeof keys)[number]> => {
-  const res: Record<string, any> = {};
+  const res: AnyObject = {};
   for (const sourceKey in data) {
-    if (data.hasOwnProperty(sourceKey)) {
+    if (Object.prototype.hasOwnProperty.call(data, sourceKey)) {
       if (!keys.includes(sourceKey)) {
         res[sourceKey] = data[sourceKey];
       }
@@ -64,13 +63,13 @@ export const objOmit = <T extends Record<string, any>>(
   return res as Omit<T, (typeof keys)[number]>;
 };
 
-export const objPick = <T extends Record<string, any>>(
+export const objPick = <T extends AnyObject>(
   data: T,
   keys: (keyof T)[],
 ): Pick<T, (typeof keys)[number]> => {
-  const res: Record<string, any> = {};
+  const res: AnyObject = {};
   for (const sourceKey in data) {
-    if (data.hasOwnProperty(sourceKey)) {
+    if (Object.prototype.hasOwnProperty.call(data, sourceKey)) {
       if (keys.includes(sourceKey)) {
         res[sourceKey] = data[sourceKey];
       }

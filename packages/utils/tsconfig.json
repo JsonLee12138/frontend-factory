@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "importHelpers": true,
+    "target": "ES5",
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "declaration": true,
+    "declarationDir": "./dist/types",
+    "outDir": "./dist",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "baseUrl": ".",
+    "rootDir": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@/types/*": ["types/*"]
+    }
+  },
+  "include": ["src", "types"],
+  "exclude": ["node_modules", "dist", "test"]
+}

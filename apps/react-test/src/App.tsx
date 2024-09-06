@@ -3,8 +3,8 @@ import reactLogo from './assets/react.svg';
 import viteLogo from '/vite.svg';
 import './App.css';
 
-import { SelectIconPark } from 'jsonlee-ui-react';
-import { SelectIconInstance } from 'jsonlee-ui-react/src/types/index';
+import { SelectIconPark, IconPark } from 'jsonlee-ui-react';
+import { SelectIconInstance } from 'jsonlee-ui-react/dist/types/selectIconPark';
 import 'jsonlee-ui-react/dist/styles/style.css';
 
 function App() {
@@ -15,6 +15,7 @@ function App() {
   return (
     <>
       <div>
+        <IconPark name={'ACane'} />
         <a href="https://vitejs.dev" target="_blank">
           <img src={viteLogo} className="logo" alt="Vite logo" />
         </a>
