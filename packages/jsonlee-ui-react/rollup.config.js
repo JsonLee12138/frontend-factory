@@ -9,11 +9,41 @@ import alias from '@rollup/plugin-alias';
 import path from 'path';
 import postcssImport from 'postcss-import';
 import dts from 'rollup-plugin-dts';
+import copy from 'rollup-plugin-copy';
+import fs from 'fs';
 import packageJson from './package.json' assert { type: 'json' };
+
+const fixDTSImports = () => {
+  return {
+    name: 'fix-dts-imports',
+    writeBundle() {
+      const dtsFilePath = path.resolve(__dirname, 'dist/types/index.d.ts');
+      let content = fs.readFileSync(dtsFilePath, 'utf-8');
+      // 替换 "@/types" 别名为相对路径
+      content = content.replace(/@\/types\//g, './');
+
+      fs.writeFileSync(dtsFilePath, content);
+    },
+  };
+};
+
+const clean = (_path) => {
+  return {
+    name: 'clean',
+    writeBundle() {
+      const cleanPath = path.resolve(__dirname, _path);
+      // 检查路径是否存在
+      if (fs.existsSync(cleanPath)) {
+        fs.rmSync(cleanPath, { recursive: true, force: true }); // 删除整个目录
+        console.log(`Deleted ${cleanPath}`);
+      }
+    },
+  };
+};
 
 export default [
   {
-    input: 'src/index.ts',
+    input: 'src/component/index.ts',
     output: [
       // {
       //   file: packageJson.main,
@@ -69,9 +99,16 @@ export default [
     external: ['react', 'react-dom', 'lodash-es'],
   },
   {
-    input: 'dist/types/index.d.ts',
+    input: 'dist/types/src/component/index.d.ts',
     output: [{ file: 'dist/types/index.d.ts', format: 'esm' }],
-    plugins: [dts.default()],
+    plugins: [
+      dts.default(),
+      copy({
+        targets: [{ src: 'src/types/*', dest: 'dist/types/' }],
+      }),
+      fixDTSImports(),
+      clean('dist/types/src'),
+    ],
     external: [/\.css$/],
   },
   {

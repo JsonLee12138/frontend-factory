@@ -1,6 +1,6 @@
 {
   "name": "jsonlee-ui-react",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "packageManager": "yarn@4.4.0",
   "module": "dist/esm/index.js",
   "types": "dist/types/index.d.ts",
@@ -11,10 +11,10 @@
   },
   "dependencies": {
     "ahooks": "^3.8.1",
+    "jsonlee-utils": "workspace:^",
     "lodash-es": "^4.17.21",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "rollup-plugin-dts": "^6.1.1"
+    "react-dom": "^18.3.1"
   },
   "files": [
     "dist",
@@ -61,6 +61,8 @@
     "postcss": "^8.4.45",
     "postcss-import": "^16.1.0",
     "rollup": "^4.21.2",
+    "rollup-plugin-copy": "^3.5.0",
+    "rollup-plugin-dts": "^6.1.1",
     "rollup-plugin-peer-deps-external": "^2.2.4",
     "rollup-plugin-postcss": "^4.0.2",
     "rollup-plugin-terser": "^7.0.2",

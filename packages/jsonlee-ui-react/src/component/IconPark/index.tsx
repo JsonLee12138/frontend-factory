@@ -1,5 +1,5 @@
 import Icon, { ALL_ICON_KEYS, IconType } from '@icon-park/react/es/all';
-import { camelCase } from '@/utils/str';
+import { camelCase } from 'jsonlee-utils';
 import { IconParkInstance, IconParkProps } from '@/types/iconpark';
 import { useBoolean, useSafeState } from 'ahooks';
 import {

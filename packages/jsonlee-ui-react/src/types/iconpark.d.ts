@@ -1,7 +1,7 @@
-import type { IIconAllProps } from '@icon-park/react/es/all';
+import type { IIconAllProps, IconType } from '@icon-park/react/es/all';
 
 export interface IconParkProps extends Omit<IIconAllProps, 'type'> {
-  name: string;
+  name: IconType | (string & {});
   cusLoad?: boolean;
 }
 
