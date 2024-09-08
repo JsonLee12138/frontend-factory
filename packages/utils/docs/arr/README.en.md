@@ -15,7 +15,7 @@ This file contains three main utility functions designed to work with arrays of 
 
 #### Parameters:
 - `data: S[]`: Array of source objects to be transformed.
-- `format: Record<string, string>`: Object defining the mapping between source and target keys. Keys are target keys, values are source keys.
+- `format: Record<string, string | function(T): any>`: Defines the mapping relationship between source object keys and target object keys. The key is the key name of the target object and the value is the key name of the source object or a function to convert the value.
 - `deep?: boolean`: Optional, specifies whether to perform deep transformation on nested objects (default is `false`).
 - `childrenKey?: KeyConfig`: Optional, key configuration for handling nested objects, with `source` and `target` keys (default is `{source: 'children', target: 'children'}`).
 

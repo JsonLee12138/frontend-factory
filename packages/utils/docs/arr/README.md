@@ -15,7 +15,7 @@
 
 #### 参数：
 - `data: S[]`: 要转换的源对象数组。
-- `format: Record<string, string>`: 定义源对象键与目标对象键的映射关系。键是目标对象的键名，值是源对象的键名。
+- `format: Record<string, string | function(T): any>`: 定义源对象键与目标对象键的映射关系。键是目标对象的键名，值是源对象的键名或一个函数用于转换值。
 - `deep?: boolean`: 可选参数，指定是否对嵌套对象执行深度转换（默认值为 `false`）。
 - `childrenKey?: KeyConfig`: 可选参数，用于处理嵌套对象的键配置，包含 `source` 和 `target` 键（默认值为 `{source: 'children', target: 'children'}`）。
 

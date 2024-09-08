@@ -15,10 +15,11 @@ import get from 'lodash-es/get';
  * @param {S[]} data - The array of source objects to be transformed.
  * @param {S[]} data - 要转换的源对象数组。
  *
- * @param {AnyObject} format - The mapping object that defines the key transformation from source to target.
- * The keys represent the target object's keys, and the values represent the corresponding keys in the source object.
- * @param {AnyObject} format - 定义从源到目标的键转换的映射对象。
- * 键表示目标对象的键名，值表示源对象中对应的键名。
+ * @param {Record<string, string | function(T): any>} format - The mapping object that defines the key transformation from source to target.
+ * The keys represent the target object's keys, and the values represent either a string (indicating the key in the source object)
+ * or a function to transform the value.
+ * @param {Record<string, string | function(T): any>} format - 定义从源到目标的键转换的映射对象。
+ * 键表示目标对象的键名，值可以是一个字符串（表示源对象中的键名）或一个函数用于转换值。
  *
  * @param {boolean} [deep=false] - Whether to perform deep transformation on nested objects specified by the childrenKey.
  * @param {boolean} [deep=false] - 是否对由 childrenKey 指定的嵌套对象执行深度转换。
@@ -31,7 +32,7 @@ import get from 'lodash-es/get';
  */
 export const arrTransform = <S extends AnyObject, T extends AnyObject>(
   data: S[],
-  format: Record<string, string>,
+  format: Record<string, string | ((item: T) => any)>,
   deep?: boolean,
   childrenKey: KeyConfig = {
     source: 'children',
@@ -43,17 +44,21 @@ export const arrTransform = <S extends AnyObject, T extends AnyObject>(
     for (const targetKey in format) {
       if (Object.prototype.hasOwnProperty.call(format, targetKey)) {
         const sourceKey = format[targetKey];
-        const value = get(item, sourceKey);
-        if (deep && sourceKey === childrenKey.source && value && value.length) {
-          resItem[childrenKey.target] = arrTransform<S, T>(
-            value,
-            format,
-            deep,
-            childrenKey,
-          );
-          continue;
+        if (typeof sourceKey === 'function') {
+          resItem[targetKey] = sourceKey(item);
+        } else {
+          const value = get(item, sourceKey);
+          if (deep && sourceKey === childrenKey.source && value && value.length) {
+            resItem[childrenKey.target] = arrTransform<S, T>(
+              value,
+              format,
+              deep,
+              childrenKey,
+            );
+          }else{
+            resItem[targetKey] = value;
+          }
         }
-        resItem[targetKey] = value;
       }
     }
     return resItem as T;
