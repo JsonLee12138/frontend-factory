@@ -1,5 +1,5 @@
 import { AnyObject } from "@/types/global";
-import { TreeBindingOptions } from "@/types/tree";
+import { TreeBindingOptions, TreeFlattenOptions } from "@/types/tree";
 
 /**
  * Binds a flat array of objects into a tree structure based on parent-child relationships.
@@ -87,3 +87,49 @@ export const treeOmit = <T extends AnyObject>(
     return result;
   });
 };
+
+/**
+ * Flattens a tree structure into a one-dimensional array.
+ * 将树结构展平成一维数组。
+ *
+ * @template T - The type of the objects in the tree.
+ * @template T - 树中对象的类型。
+ *
+ * @param {T[]} data - The tree data to flatten.
+ * @param {T[]} data - 要展开的树数据。
+ *
+ * @param {Object} [options] - Options to configure the flattening process.
+ * @param {Object} [options] - 配置展开过程的选项。
+ *
+ * @param {string} [options.childrenKey='children'] - The key used to identify children nodes in the tree structure.
+ * @param {string} [options.childrenKey='children'] - 用于标识树结构中子节点的键。
+ *
+ * @param {boolean} [options.keepChildren=false] - Whether to keep the children key in the flattened items.
+ * @param {boolean} [options.keepChildren=false] - 是否在展平的项中保留 children 键。
+ *
+ * @returns {T[]} - The flattened array of tree nodes.
+ * @returns {T[]} - 展平后的树节点数组。
+ */
+export const treeFlatten = <T extends AnyObject<string>>(data: T[], options: Partial<TreeFlattenOptions> = {}): T[] => {
+  const { childrenKey = 'children', keepChildren = false } = options;
+  if (!Array.isArray(data)) {
+    return data;
+  }
+  return data.flatMap(item => {
+    if (Array.isArray(item)) {
+      return treeFlatten(item, options);
+    }
+    const children = item[childrenKey];
+    if (Array.isArray(children) && children.length) {
+      const _item: AnyObject<string> = { ...item };
+      const flattenedChildren = treeFlatten(children, options);
+      if (!keepChildren) {
+        delete _item[childrenKey];
+      }else{
+        _item[childrenKey] = flattenedChildren;
+      }
+      return [_item, ...flattenedChildren];
+    }
+    return item;
+  });
+}

@@ -9,6 +9,7 @@ This file contains two main utility functions for working with tree-structured d
 
 1. **treeBind**: Binds a flat array of objects into a tree structure based on parent-child relationships.
 2. **treeOmit**: Omits specified keys from a tree-structured array of objects and returns a new tree without those keys.
+3. **treeFlatten**: Flattens a tree structure into a one-dimensional array.
 
 ### treeBind
 
@@ -50,4 +51,24 @@ const tree = [
 ];
 const newTree = treeOmit(tree, ['name']);
 // Output: [{ id: 1, children: [{ id: 2 }] }]
+```
+
+### treeFlatten
+
+#### Parameters:
+- `data: T[]`: The tree structure array to flatten.
+- `options?: Object`: Optional parameters to configure the flattening process.
+  - `childrenKey?: string`: The key used to identify children nodes in the tree structure, default is `'children'`.
+  - `keepChildren?: boolean`: Whether to keep the `children` key in the flattened items, default is `false`.
+
+#### Returns:
+- `T[]`: The flattened array of tree nodes.
+
+#### Example usage:
+```typescript
+const data = [
+  { name: 'John', children: [{ name: 'Anna' }] },
+  { name: 'Mike', children: [{ name: 'Chris', children: [{ name: 'Tom' }] }] },
+];
+const flattened = treeFlatten(data, { keepChildren: false });
 ```

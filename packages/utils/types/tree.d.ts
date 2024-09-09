@@ -3,3 +3,8 @@ export interface TreeBindingOptions {
   parentKey: string;
   childrenKey: string;
 }
+
+export interface TreeFlattenOptions {
+  childrenKey: string;
+  keepChildren: boolean;
+}

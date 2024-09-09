@@ -9,6 +9,7 @@
 
 1. **treeBind**: 根据父子关系将平面对象数组绑定为树形结构。
 2. **treeOmit**: 从树形结构的对象数组中省略指定的键，并返回不包含这些键的新树。
+3. **treeFlatten**: 将树结构展平成一维数组。
 
 ### treeBind
 
@@ -50,4 +51,24 @@ const tree = [
 ];
 const newTree = treeOmit(tree, ['name']);
 // 输出: [{ id: 1, children: [{ id: 2 }] }]
+```
+
+### treeFlatten
+
+#### 参数：
+- `data: T[]`: 要展开的树结构数组。
+- `options?: Object`: 可选参数，用于配置展开过程。
+  - `childrenKey?: string`: 用于标识树结构中子节点的键，默认为 `'children'`。
+  - `keepChildren?: boolean`: 是否在展平的项中保留 `children` 键，默认为 `false`。
+
+#### 返回值：
+- `T[]`: 展平后的树节点数组。
+
+#### 示例用法：
+```typescript
+const data = [
+  { name: 'John', children: [{ name: 'Anna' }] },
+  { name: 'Mike', children: [{ name: 'Chris', children: [{ name: 'Tom' }] }] },
+];
+const flattened = treeFlatten(data, { keepChildren: false });
 ```

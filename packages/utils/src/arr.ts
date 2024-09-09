@@ -1,5 +1,5 @@
 import { KeyConfig } from '@/types/arr';
-import { AnyObject } from '@/types/global';
+import { AnyObject, BaseType } from '@/types/global';
 import get from 'lodash-es/get';
 
 /**
