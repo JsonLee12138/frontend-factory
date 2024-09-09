@@ -23,7 +23,7 @@ const TableMain = forwardRef<TableRef, TableProps>(<T = AnyObject,>(
     <Table
       {...props}
       ref={ref}
-      className={'border rounded'}
+      className={'border rounded w-full overflow-auto'}
       bordered={bordered}
       loading={loading}
       columns={columns}

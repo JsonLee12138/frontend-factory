@@ -8,11 +8,11 @@ import { useCallback } from 'react';
 const initOptions: AutoCompleteProps['options'] = treeFlatten(
   dynamicRoutes,
 ).map((item) => ({
-  label: item.path,
-  value: item.path,
+  label: item.name,
+  value: item.name,
 }));
 
-const PagePathInput = ({ value, onChange }: AutoCompleteProps) => {
+const PageNameInput = ({ value, onChange }: AutoCompleteProps) => {
   const [options, setOptions] =
     useSafeState<AutoCompleteProps['options']>(initOptions);
   const handleOnSearch = useCallback(
@@ -35,4 +35,4 @@ const PagePathInput = ({ value, onChange }: AutoCompleteProps) => {
   );
 };
 
-export default PagePathInput;
+export default PageNameInput;

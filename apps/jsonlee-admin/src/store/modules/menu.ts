@@ -8,6 +8,7 @@ import { MenuItem } from '@/types/api_modules/menu';
 const initState: MenuState = {
   tree: [],
   flattenList: [],
+  flag: false,
 };
 
 const menuApi = new MenuApi();
@@ -23,12 +24,18 @@ export const menuSlice = createSlice({
       state.flattenList = action.payload;
       state.tree = treeBind(action.payload);
     },
+    clear: (state) => {
+      state.tree = [];
+      state.flattenList = [];
+      state.flag = false;
+    },
   },
   extraReducers: (builder) =>
     builder.addCase(getMenuData.fulfilled, (state: MenuState, action) => {
       const { data } = action.payload as unknown as Result<MenuItem[]>;
       state.flattenList = data;
       state.tree = treeBind<MenuItem>(data);
+      state.flag = true;
     }),
 });
 

@@ -11,6 +11,7 @@ const Dialog = forwardRef(
     const [visible, { setFalse: setVisibleFalse, setTrue: setVisibleTrue }] =
       useBoolean(false);
     const [title, setTitle] = useSafeState<string>(_title as string);
+    const [tempData, setTempData] = useSafeState<any>();
     const handleAfterClose = useCallback(() => {
       afterClose?.();
     }, [afterClose]);
@@ -18,10 +19,11 @@ const Dialog = forwardRef(
       setVisibleFalse();
     }, []);
     const handleConfirm = useCallback(() => {
-      onConfirm?.(close);
+      onConfirm?.(close, tempData);
     }, [close, onConfirm]);
-    const open = useCallback((title?: string) => {
+    const open = useCallback((title?: string, data?: any) => {
       title && setTitle(title);
+      setTempData(data);
       setVisibleTrue();
     }, []);
     useImperativeHandle(

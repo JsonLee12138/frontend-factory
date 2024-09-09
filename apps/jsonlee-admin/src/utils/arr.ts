@@ -49,6 +49,10 @@ export const arrTransform = <S extends AnyObject, T extends AnyObject>(
     for (const targetKey in format) {
       if (Object.prototype.hasOwnProperty.call(format, targetKey)) {
         const sourceKey = format[targetKey];
+        if (typeof sourceKey === 'function') {
+          resItem[targetKey] = sourceKey(item);
+          continue;
+        }
         const value = get(item, sourceKey);
         if (deep && sourceKey === childrenKey.source && value && value.length) {
           resItem[childrenKey.target] = arrTransform<S, T>(
@@ -91,5 +95,29 @@ export const arrOmit = <T extends Record<string, unknown>>(
       }
     }
     return result;
+  });
+};
+
+export const arrFlatten = <T>(arr: T[], options = {}): T[] => {
+  const { childrenKey = 'children', keepChildren = true } = options;
+  if (!Array.isArray(arr)) {
+    return [arr];
+  }
+  return arr.flatMap((item) => {
+    if (Array.isArray(item)) {
+      return arrFlatten(item);
+    }
+    if (
+      item[childrenKey] &&
+      Array.isArray(item.children) &&
+      item.children.length
+    ) {
+      const { children, ...rest } = item;
+      return [
+        keepChildren ? item : rest,
+        ...arrFlatten(item.children, options),
+      ];
+    }
+    return item;
   });
 };

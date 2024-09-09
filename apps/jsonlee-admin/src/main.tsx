@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import App from './App';
 import './styles/index.css';
 import './styles/antd.scss';
+import './styles/animation.css';
 import { Provider } from 'react-redux';
 import store, { persistor } from './store/index';
 import '@icon-park/react/styles/index.css';

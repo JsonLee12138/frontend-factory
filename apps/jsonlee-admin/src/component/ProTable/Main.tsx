@@ -23,7 +23,7 @@ const TableMain = <T = AnyObject,>(
     <Table
       {...props}
       ref={ref}
-      className={'border rounded'}
+      className={'border rounded w-full overflow-x-auto'}
       bordered={bordered}
       loading={loading}
       columns={columns}

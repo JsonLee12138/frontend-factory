@@ -1,39 +1,26 @@
 import { RouterItem } from '../types/router';
-import PageNotFound from '@/pages/PageNotFound';
-import ForbiddenPage from '@/pages/ForbiddenPage';
-import Singin from '@/pages/Singin';
-import Layout from '@/component/Layout';
 import { lazy } from 'react';
+import { genRoutes } from './scanPage';
+
+export const dynamicRoutes: RouterItem[] = genRoutes();
+
+console.log(dynamicRoutes, '>>>');
+
+export const whiteRoutes: string[] = ['signin', '403', '404', 'layout'];
 
 export const staticRoutes: RouterItem[] = [
   {
     path: '/signin',
     name: 'signin',
-    component: Singin,
+    component: lazy(() => import('@/pages/Singin')),
     meta: {
       title: '登录',
     },
   },
-  {
-    path: '/',
-    name: 'layout',
-    component: Layout,
-    children: [
-      {
-        path: '/menu',
-        name: 'menu',
-        component: lazy(() => import('@/pages/Menu/index')),
-      },
-    ],
-  },
-  // {
-  //   path: '/menu',
-  //   name: 'menu',
-  //   component: lazy(()=> import('@/pages/Menu/index.tsx'))
-  // },
+  ...dynamicRoutes,
   {
     path: '/403',
-    component: ForbiddenPage,
+    component: lazy(() => import('@/pages/ForbiddenPage')),
     name: '403',
     meta: {
       title: '403',
@@ -41,7 +28,7 @@ export const staticRoutes: RouterItem[] = [
   },
   {
     path: '*',
-    component: PageNotFound,
+    component: lazy(() => import('@/pages/PageNotFound')),
     name: '404',
     meta: {
       title: '404',

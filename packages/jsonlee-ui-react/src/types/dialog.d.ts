@@ -2,12 +2,14 @@ import { ModalProps } from 'antd';
 import { ReactNode } from 'react';
 
 export interface DialogInstance {
-  open: (title?: string) => void;
+  open: (title?: string, data?: any) => void;
   close: () => void;
 }
 
+export type DialogOnConfirm = (done: () => void, data?: any) => void;
+
 export interface DialogProps extends Omit<ModalProps, 'open' | 'onOk'> {
-  onConfirm?: (done: () => void) => void;
+  onConfirm?: DialogOnConfirm;
   afterClose?: () => void;
   children?: ReactNode;
 }

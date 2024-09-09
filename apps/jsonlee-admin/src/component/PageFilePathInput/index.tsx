@@ -1,25 +1,25 @@
-import { dynamicRoutes } from '@/router';
+import { routeModules } from '@/router/scanPage';
 import { useSafeState } from 'ahooks';
 import { AutoComplete } from 'antd';
 import type { AutoCompleteProps } from 'antd';
-import { treeFlatten } from 'jsonlee-utils';
 import { useCallback } from 'react';
 
-const initOptions: AutoCompleteProps['options'] = treeFlatten(
-  dynamicRoutes,
-).map((item) => ({
-  label: item.path,
-  value: item.path,
+const initOptions: AutoCompleteProps['options'] = routeModules.map((item) => ({
+  label: item,
+  value: item,
 }));
 
-const PagePathInput = ({ value, onChange }: AutoCompleteProps) => {
+const PageFilePathInput = ({ value, onChange }: AutoCompleteProps) => {
   const [options, setOptions] =
     useSafeState<AutoCompleteProps['options']>(initOptions);
   const handleOnSearch = useCallback(
     (value: string) => {
-      const _opts = initOptions.filter((item) =>
-        (item.value as string).includes(value),
-      );
+      const _opts = routeModules
+        .filter((item) => item.includes(value))
+        .map((item) => ({
+          label: item,
+          value: item,
+        }));
       setOptions(_opts);
     },
     [setOptions],
@@ -30,9 +30,9 @@ const PagePathInput = ({ value, onChange }: AutoCompleteProps) => {
       onChange={onChange}
       options={options}
       onSearch={handleOnSearch}
-      placeholder={'请输入路由名称'}
+      placeholder={'请输入文件路径'}
     />
   );
 };
 
-export default PagePathInput;
+export default PageFilePathInput;

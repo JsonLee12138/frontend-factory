@@ -1,3 +1,5 @@
+import { AnyObject } from '@/types/global';
+
 export interface TreeBindingOptions {
   idKey: string;
   parentKey: string;
@@ -12,6 +14,8 @@ export const treeBind = <T extends object>(
     childrenKey = 'children',
   }: Partial<TreeBindingOptions> = {},
 ) => {
+  console.log(data, '...');
+
   const treeData: T[] = [];
   const map = new Map();
   data.forEach((item) => {
@@ -28,10 +32,7 @@ export const treeBind = <T extends object>(
   return treeData;
 };
 
-export const treeOmit = <T extends Record<string, unknown>>(
-  data: T[],
-  keys: string[],
-) => {
+export const treeOmit = <T extends AnyObject>(data: T[], keys: string[]) => {
   return data.map((item) => {
     const result: Record<string, unknown> = {};
     for (const key in item) {

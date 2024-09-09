@@ -26,8 +26,10 @@ import {
   MenuParams,
   MenuUpdateDTO,
 } from '@/types/api_modules/menu';
-import PagePathInput from '@/component/PagePathInput';
+import PageFilePathInput from '@/component/PageFilePathInput';
 import { IconPark, SelectIconPark } from 'jsonlee-ui-react';
+import PageNameInput from '@/component/PageNameInput';
+import PagePathInput from '@/component/PagePathInput';
 
 export interface Props {
   onOk?: () => void;
@@ -78,6 +80,9 @@ const EditModal = forwardRef(({ onOk }: Props, ref) => {
           placeholder: '请输入路由名称',
         },
         rules: [{ required: true, message: '请输入路由名称' }],
+        component: (value, onChange) => (
+          <PageNameInput value={value} onChange={onChange} />
+        ),
       },
       {
         label: '展示名称',
@@ -88,6 +93,17 @@ const EditModal = forwardRef(({ onOk }: Props, ref) => {
         rules: [{ required: true, message: '请输入展示名称' }],
       },
       {
+        label: '路由地址',
+        name: 'path',
+        inputProps: {
+          placeholder: '请输入路由地址',
+        },
+        rules: [{ required: true, message: '请输入路由地址' }],
+        component: (value, onChange) => (
+          <PagePathInput value={value} onChange={onChange} />
+        ),
+      },
+      {
         label: '文件路径',
         warning: '如果是有子菜单并且是展示在layout下面的请填写layout!',
         name: 'component',
@@ -95,7 +111,7 @@ const EditModal = forwardRef(({ onOk }: Props, ref) => {
           placeholder: '请输入文件路径',
         },
         component: (value, onChange) => (
-          <PagePathInput value={value} onChange={onChange} />
+          <PageFilePathInput value={value} onChange={onChange} />
         ),
       },
       {
@@ -107,7 +123,12 @@ const EditModal = forwardRef(({ onOk }: Props, ref) => {
         component: (value, onChange) => (
           <>
             <Button
-              icon={<IconPark name={value} />}
+              style={{
+                width: 'fit-content',
+                paddingLeft: '8px',
+                paddingRight: '8px',
+              }}
+              icon={<IconPark name={value}>请选择图标</IconPark>}
               onClick={() => {
                 selectIconRef.current?.open();
               }}

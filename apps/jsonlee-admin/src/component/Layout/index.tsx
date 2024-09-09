@@ -1,55 +1,72 @@
 import { Layout as AntdLayout, Menu } from 'antd';
-import { Outlet } from 'react-router-dom';
-// import Icon from '@icon-park/react/es/all';
-import { treeBind, treeOmit } from '@/utils/tree';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { ItemType, MenuItemType } from 'antd/es/menu/interface';
-import { useBoolean } from 'ahooks';
-import { useMemo } from 'react';
+import { useBoolean, useSafeState } from 'ahooks';
+import { useCallback, useEffect, useMemo } from 'react';
 import { IconPark } from 'jsonlee-ui-react';
+import { useAppSelector } from '@/hooks/store';
+import { MenuItem } from '@/types/api_modules/menu';
+import Icon from '../Icon';
+import { arrTransform, treeOmit } from 'jsonlee-utils';
 
 const { Header, Footer, Sider, Content } = AntdLayout;
 
-const items = [
-  {
-    id: '1',
-    icon: 'system',
-    label: '超级管理员',
-  },
-  {
-    id: '2',
-    parentId: '1',
-    icon: 'application-menu',
-    label: '菜单管理',
-  },
-  {
-    id: '3',
-    parentId: '1',
-    icon: 'peoples',
-    label: '用户管理',
-  },
-  {
-    id: '4',
-    parentId: '1',
-    icon: 'personal-privacy',
-    label: '角色管理',
-  },
-];
-
 const Layout = () => {
   const [collapsed, { toggle: collapsedToggle }] = useBoolean(false);
+  const navigate = useNavigate();
+  const menuTree = useAppSelector((state) => state.menu.tree);
+  const menuList = useAppSelector((state) => state.menu.flattenList);
+  const location = useLocation();
+  const [currentPath, setCurrentPath] = useSafeState<string>(location.pathname);
+  const [selectedKeys, setSelectKeys] = useSafeState<string[]>([]);
+  const [openKeys, setOpenKeys] = useSafeState<string[]>([]);
+
+  useEffect(() => {
+    const crrentMenu = menuList.find((item) => item.path === currentPath);
+    if (crrentMenu) {
+      setSelectKeys([crrentMenu.id?.toString() || '']);
+      setOpenKeys([crrentMenu.parentId?.toString() || '']);
+    } else {
+      setSelectKeys([]);
+      setOpenKeys([]);
+    }
+  }, [currentPath, menuList]);
+
+  const handleChange = useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ({ key }: any) => {
+      const currentMenu = menuList.find((item) => item.id === parseInt(key));
+      if (currentMenu) {
+        setCurrentPath(currentMenu.path);
+        navigate(currentMenu.path);
+      }
+    },
+    [menuList, navigate, setCurrentPath],
+  );
+
+  const handleOpenChange = useCallback(
+    (keys: string[]) => {
+      setOpenKeys(keys);
+    },
+    [setOpenKeys],
+  );
+
   const menus = useMemo(
     () =>
-      treeOmit(
-        treeBind(
-          items.map((item) => ({
-            ...item,
-            key: item.id,
-            icon: item.icon ? <IconPark name={item.icon} /> : null,
-          })),
+      treeOmit<MenuItem>(
+        arrTransform(
+          menuTree,
+          {
+            label: 'meta.title',
+            chilren: 'children',
+            key: 'id',
+            icon: (item: MenuItem) => <Icon name={item.meta.icon} />,
+          },
+          true,
         ),
         ['parentId'],
       ) as unknown as ItemType<MenuItemType>[],
-    [],
+    [menuTree],
   );
 
   return (
@@ -68,7 +85,15 @@ const Layout = () => {
         >
           <h1 className={'text-lg'}>Json Admin</h1>
         </div>
-        <Menu items={menus} mode="inline" theme="light" />
+        <Menu
+          items={menus}
+          mode="inline"
+          theme="light"
+          selectedKeys={selectedKeys}
+          openKeys={openKeys}
+          onClick={handleChange}
+          onOpenChange={handleOpenChange}
+        />
       </Sider>
       <AntdLayout>
         <Header
