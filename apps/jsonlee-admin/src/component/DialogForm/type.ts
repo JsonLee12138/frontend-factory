@@ -7,6 +7,6 @@ export type DialogFormProps<T = AnyObject> = Omit<FormProps, 'onSubmit'> & {
 };
 
 export interface DialogFormInstance<T = AnyObject> {
-  open?: (_title: string, data: T) => void;
-  close?: () => void;
+  open: (_title: string, data?: T) => void;
+  close: () => void;
 }

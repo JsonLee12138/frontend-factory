@@ -43,6 +43,7 @@ interface ParamsItem extends Omit<MenuParams, 'menuId' | 'type'> {
 const initFormData = {
   hidden: false,
   keepAlive: true,
+  parentId: 0,
 };
 
 const menuApi = new MenuApi();
@@ -57,6 +58,17 @@ const EditModal = forwardRef(({ onOk }: Props, ref) => {
   const [tempData, setTempData] =
     useSafeState<Partial<MenuUpdateDTO | MenuCreateDTO>>();
   const menuTree = useAppSelector((state) => state.menu.tree);
+  const menuOptions = useMemo<MenuItem[]>(() => {
+    return [
+      {
+        meta: {
+          title: '根菜单',
+        },
+        id: 0,
+        children: menuTree || [],
+      } as unknown as MenuItem,
+    ];
+  }, [menuTree]);
   const formFields = useMemo<FormFieldItem[]>(() => {
     return [
       {
@@ -64,7 +76,7 @@ const EditModal = forwardRef(({ onOk }: Props, ref) => {
         name: 'parentId',
         component: (value, onChange) => (
           <TreeSelect<MenuItem>
-            options={menuTree || []}
+            options={menuOptions || []}
             placeholder={'请选择父级菜单'}
             labelKey="meta.title"
             valueKey="id"
@@ -173,7 +185,7 @@ const EditModal = forwardRef(({ onOk }: Props, ref) => {
         },
       },
     ];
-  }, [menuTree]);
+  }, [menuOptions]);
   const handleSetParamsList = useCallback(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (value: any, record: ParamsItem, key: keyof Omit<ParamsItem, 'index'>) => {
@@ -242,7 +254,7 @@ const EditModal = forwardRef(({ onOk }: Props, ref) => {
           hidden: values.hidden,
           keepAlive: values.keepAlive,
         },
-        parentId: values.parentId,
+        parentId: values.parentId || null,
       };
       if (typeof (tempData as Partial<MenuUpdateDTO>)?.id === 'number') {
         // 编辑

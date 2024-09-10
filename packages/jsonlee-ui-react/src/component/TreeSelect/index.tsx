@@ -39,6 +39,7 @@ const TreeSelect = <T extends object = DefaultOptionType>({
     <ATreeSelect
       {...props}
       style={{ width: width }}
+      className={'w-full'}
       treeData={treeData as ATreeSelectProps['treeData']}
       placeholder={placeholder}
       value={value}

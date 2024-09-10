@@ -4,8 +4,6 @@ import { genRoutes } from './scanPage';
 
 export const dynamicRoutes: RouterItem[] = genRoutes();
 
-console.log(dynamicRoutes, '>>>');
-
 export const whiteRoutes: string[] = ['signin', '403', '404', 'layout'];
 
 export const staticRoutes: RouterItem[] = [

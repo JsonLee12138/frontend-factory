@@ -1,6 +1,8 @@
 import {
   forwardRef,
+  ReactNode,
   Ref,
+  RefAttributes,
   useCallback,
   useImperativeHandle,
   useRef,
@@ -18,20 +20,21 @@ import { AnyObject } from 'antd/es/_util/type';
 
 const DialogForm = forwardRef(
   <T = AnyObject,>(
-    { onSubmit, afterClose, fields }: DialogFormProps<T>,
+    { onSubmit, afterClose, fields, initialValues, title }: DialogFormProps<T>,
     ref: Ref<DialogFormInstance<T>>,
   ) => {
     const dialogRef = useRef<DialogInstance>(null);
     const formRef = useRef<FormInstance>(null);
-    const [title, setTitle] = useSafeState<string>('');
     const [tempData, setTempData] = useSafeState<Partial<T>>();
     const handleOpen = useCallback(
-      (_title: string, data: Partial<T>) => {
-        setTitle(_title);
+      (_title: string, data?: Partial<T>) => {
         setTempData(data);
-        dialogRef.current?.open();
+        requestAnimationFrame(() => {
+          formRef.current?.setFieldsValue(data || {});
+        });
+        dialogRef.current?.open(_title);
       },
-      [dialogRef],
+      [setTempData],
     );
     const close = useCallback(() => {
       dialogRef.current?.close();
@@ -73,10 +76,17 @@ const DialogForm = forwardRef(
         onConfirm={handleConfirm}
         afterClose={handleAfterClose}
       >
-        <Form ref={formRef} fields={fields} onSubmit={handleSubmit} />
+        <Form
+          ref={formRef}
+          initialValues={initialValues}
+          fields={fields}
+          onSubmit={handleSubmit}
+        />
       </Dialog>
     );
   },
-);
+) as unknown as <T = AnyObject>(
+  props: DialogFormProps<T> & RefAttributes<DialogFormInstance<T>>,
+) => ReactNode;
 
 export default DialogForm;

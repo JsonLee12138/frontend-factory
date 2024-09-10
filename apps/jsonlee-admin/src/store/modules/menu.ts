@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { MenuState } from '@/types/store_modules/menu';
-import { treeBind } from '@/utils/tree';
+import { treeBind } from 'jsonlee-utils';
 import { MenuApi } from '@/api/modules/menu';
 import { Result } from '@/types/api';
 import { MenuItem } from '@/types/api_modules/menu';

@@ -1,4 +1,10 @@
-import { forwardRef, ReactNode, useCallback, useImperativeHandle } from 'react';
+import {
+  forwardRef,
+  ReactNode,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+} from 'react';
 import { Modal, type ModalProps } from 'antd';
 import { useBoolean, useSafeState } from 'ahooks';
 
@@ -29,6 +35,9 @@ const Dialog = forwardRef(
       title && setTitle(title);
       setVisibleTrue();
     }, []);
+    useEffect(() => {
+      _title && setTitle(_title as string);
+    }, [_title]);
     useImperativeHandle(
       ref,
       () => ({

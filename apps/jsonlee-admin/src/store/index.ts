@@ -6,11 +6,13 @@ import storage from 'redux-persist/lib/storage';
 import encrypt from './persistTransforms/encrypt';
 import stateReconciler from './stateReconciler';
 import menuReducer from './modules/menu';
+import roleReducer from './modules/role';
 
 const rootReducer = combineReducers({
   loading: loadingReducer,
   user: userReducer,
   menu: menuReducer,
+  role: roleReducer,
 });
 
 const persistConfig = {
