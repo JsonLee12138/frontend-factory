@@ -24,6 +24,7 @@ const SearchBar = <P = AnyObject,>({ fields }: SearchBarProps) => {
       ...fields,
       {
         uniqueKey: 'search-buttons',
+        colon: false,
         component: () => (
           <Space>
             <Button
@@ -63,7 +64,7 @@ const SearchBar = <P = AnyObject,>({ fields }: SearchBarProps) => {
     [getParams, getTableList, setPagination, setParams],
   );
   // useEffect
-  return <Form fields={searchFields} onSubmit={handleSearch} />;
+  return <Form colon={true} fields={searchFields} onSubmit={handleSearch} />;
 };
 
 export default SearchBar;

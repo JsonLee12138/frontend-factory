@@ -138,7 +138,7 @@ const Form = forwardRef(
                   name={field.name}
                   rules={field.rules}
                   label={<Label label={field.label} warning={field.warning} />}
-                  colon={colon}
+                  colon={typeof field.colon === 'boolean' ? field.colon : colon}
                   labelAlign={labelAlign}
                 >
                   <Field {...field} />

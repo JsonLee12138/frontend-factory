@@ -65,6 +65,7 @@ export interface FormFieldItem<T = any, Type extends FormFieldType = 'text'> {
   value?: T;
   onChange?: (value: T) => void;
   uniqueKey?: string;
+  colon?: boolean;
 }
 
 export interface FormProps extends Omit<AFormProps, 'fields' | 'onFinish'> {

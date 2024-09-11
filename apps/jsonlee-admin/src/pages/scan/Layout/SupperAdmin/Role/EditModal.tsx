@@ -107,7 +107,6 @@ const EditModal = forwardRef<EditModalRef, Props>(({ onSubmited }, ref) => {
 
   const handleSubmit = useCallback(
     async (values: RoleItem) => {
-      console.log(values, 'handleSubmit');
       const { parentId, ...formData } = values;
       // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
       let fn: Function = roleApi.add<RoleCreateDTO>;
