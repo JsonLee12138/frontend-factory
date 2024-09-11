@@ -129,13 +129,14 @@ const Form = forwardRef(
           {fields.map((field) => {
             const col = field.col || 1;
             const span = Math.min(Math.max(Math.ceil(fieldSpan * col), 1), 24);
+            const _colon = typeof field.colon === 'boolean'? field.colon : colon;
             return (
               <Col span={span} key={field.name || field.uniqueKey}>
                 <AForm.Item
                   name={field.name}
                   rules={field.rules}
                   label={<Label label={field.label} warning={field.warning} />}
-                  colon={colon}
+                  colon={_colon}
                   labelAlign={labelAlign}
                 >
                   <Field {...field} />
