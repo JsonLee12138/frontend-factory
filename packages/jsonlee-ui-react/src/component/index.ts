@@ -5,3 +5,4 @@ export { default as Form } from './Form';
 export { default as TreeSelect } from './TreeSelect';
 export { default as ProTable } from './ProTable';
 export { default as DialogForm } from './DialogForm';
+export { default as Tree } from './Tree';

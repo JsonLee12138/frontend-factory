@@ -27,3 +27,5 @@ import 'jsonlee-ui-react/dist/styles/style.css';
 - **TreeSelect** [文档](https://github.com/JsonLee12138/frontend-factory/tree/main/packages/jsonlee-ui-react/src/component/TreeSelect/README.md)
 
 - **ProTable** [文档](https://github.com/JsonLee12138/frontend-factory/tree/main/packages/jsonlee-ui-react/src/component/ProTable/README.md)
+
+- **Tree** [文档](https://github.com/JsonLee12138/frontend-factory/tree/main/packages/jsonlee-ui-react/src/component/Tree/README.md)
