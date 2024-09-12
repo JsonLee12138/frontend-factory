@@ -68,7 +68,7 @@ const data = [
 const omitted = arrOmit(data, ['location']);
 ```
 
-### group
+### group (暂不推荐使用)
 
 #### 参数：
 - `data: T[]`: 要分组的对象数组。
