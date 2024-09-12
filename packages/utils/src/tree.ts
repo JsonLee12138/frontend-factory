@@ -1,5 +1,6 @@
 import { AnyObject } from "@/types/global";
 import { TreeBindingOptions, TreeFlattenOptions } from "@/types/tree";
+import cloneDeep from 'lodash-es/cloneDeep';
 
 /**
  * Binds a flat array of objects into a tree structure based on parent-child relationships.
@@ -33,11 +34,12 @@ export const treeBind = <T extends object>(
   }: Partial<TreeBindingOptions> = {},
 ) => {
   const treeData: T[] = [];
+  const newData = cloneDeep(data);
   const map = new Map();
-  data.forEach((item) => {
+  newData.forEach((item) => {
     map.set((item as AnyObject)[idKey], item);
   });
-  data.forEach((item) => {
+  newData.forEach((item) => {
     const parent = map.get((item as AnyObject)[parentKey]);
     if (parent) {
       (parent[childrenKey] || (parent[childrenKey] = [])).push(item);
