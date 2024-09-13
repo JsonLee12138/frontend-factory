@@ -13,7 +13,7 @@ import type { TreeInstance, TreeProps } from '@/types/tree';
 import { Tree as ATree, type TreeProps as ATreeProps } from 'antd';
 import {} from 'antd/es/tree';
 import { useBoolean, useSafeState } from 'ahooks';
-import { arrTransform, flatFilterByChildren, treeFlatten } from 'jsonlee-utils';
+import { arrTransform, flatEach, flatFilterByChildren, treeFlatten } from 'jsonlee-utils';
 import { AnyObject } from '@/types/global';
 
 // TODO: 性能优化的时候可将 onCheck、onExpand 等事件处理逻辑可以提取为自定义 Hook
@@ -80,9 +80,12 @@ const Tree = forwardRef(
     }, [flattenOptions]);
     // 处理全不选
     const handleUnCheckAll = useCallback(() => {
-      setCheckedKeys([]);
-      setHalfCheckedKeys([]);
-    }, []);
+      const showKeys = flattenOptions.map((item) => item.key);
+      const _checkedKeys = checkedKeys.filter((item) => !showKeys.includes(item));
+      const _halfCheckedKeys = halfCheckedKeys.filter((item) => !showKeys.includes(item));
+      setCheckedKeys(_checkedKeys);
+      setHalfCheckedKeys(_halfCheckedKeys);
+    }, [checkedKeys, flattenOptions, halfCheckedKeys]);
     // 处理展开
     const handleExpand = useCallback<
       Exclude<ATreeProps<T>['onExpand'], undefined>
@@ -109,6 +112,23 @@ const Tree = forwardRef(
         halfChecked: halfCheckedKeys,
       };
     }, [checkedKeys, halfCheckedKeys]);
+    // 处理 options 变化后 全选判断 根据children 和 checkedKeys去判断, 可能会并没有全选的情况下父级被选中
+    useEffect(() => {
+      if (options.length) {
+        const abnormal: Key[] = [];
+        flatEach(options, (item) => {
+          if (item.children && item.children.length) {
+            if (!item.children.every((childItem: T) => checkedKeys.includes(childItem.key))) {
+              abnormal.push(item.key);
+            }
+          }
+        });
+        const _checkedKeys = checkedKeys.filter((item) => !abnormal.includes(item));
+        if (_checkedKeys.length !== checkedKeys.length) {
+          setCheckedKeys(_checkedKeys);
+        }
+      }
+    }, [options, checkedKeys]);
     // 处理初始化 checked 数据
     useEffect(() => {
       if (!checkedInit && options.length && checked?.length) {
@@ -143,6 +163,7 @@ const Tree = forwardRef(
         onCheckedAllChange?.(flag);
       }
     }, [checkedKeys, flattenOptions, onCheckedAllChange]);
+    // 暴露方法
     useImperativeHandle(
       ref,
       () => ({

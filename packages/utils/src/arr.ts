@@ -191,7 +191,7 @@ export const group = <T extends AnyObject, K extends object = AnyObject>(data: T
  * @returns {boolean} Returns `true` if the callback returned `true` for any item, otherwise `false`.
  * @returns {boolean} 如果回调函数对某一项返回 `true`，则返回 `true`，否则返回 `false`。
  */
-export const flatEach = <T extends AnyObject>(data: T[], callback: (item: T) => boolean | void, options: FlatEachOptions): boolean => {
+export const flatEach = <T extends AnyObject>(data: T[], callback: (item: T) => boolean | void, options: FlatEachOptions = {} as FlatEachOptions): boolean => {
   const { childrenKey = 'children' } = options;
   for (const item of data) {
     const result = callback(item);
