@@ -9,7 +9,7 @@
 
 | Name               | Type                                          | Description                                                                                  |
 |--------------------|-----------------------------------------------|----------------------------------------------------------------------------------------------|
-| `checked`          | `Key[]`                                       | Array of keys of the checked nodes.                                                          |
+| `checkedKeys`          | `Key[]`                                       | Array of keys of the checked nodes.                                                          |
 | `treeData`         | `T[]`                                         | The data source for the tree.                                                                |
 | `optionsFormat`    | `object`                                      | Options for formatting the tree data.                                                        |
 | `onCheckedAllChange` | `function`                                  | Callback function when the check-all state changes.                                          |
@@ -41,7 +41,7 @@ const MyComponent = () => {
     <Tree
       ref={treeRef}
       treeData={treeData}
-      checked={['0-0']}
+      checkedKeys={['0-0']}
       defaultExpandAll
     />
   );

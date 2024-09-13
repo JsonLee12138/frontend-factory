@@ -21,7 +21,7 @@ import { AnyObject } from '@/types/global';
 const Tree = forwardRef(
   <T extends AnyObject = AnyObject>(
     {
-      checked,
+      checkedKeys: checked,
       treeData,
       optionsFormat,
       onCheckedAllChange,

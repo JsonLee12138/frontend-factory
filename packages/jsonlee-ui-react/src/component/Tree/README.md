@@ -9,7 +9,7 @@
 
 | 名称               | 类型                                          | 描述                                                                                      |
 |--------------------|-----------------------------------------------|------------------------------------------------------------------------------------------|
-| `checked`          | `Key[]`                                       | 已选中的节点键值数组。                                                                    |
+| `checkedKeys`          | `Key[]`                                       | 已选中的节点键值数组。                                                                    |
 | `treeData`         | `T[]`                                         | 树形数据源。                                                                              |
 | `optionsFormat`    | `object`                                      | 用于格式化树形数据的选项。                                                                |
 | `onCheckedAllChange` | `function`                                  | 当全选状态改变时的回调函数。                                                              |
@@ -40,7 +40,7 @@ const MyComponent = () => {
     <Tree
       ref={treeRef}
       treeData={treeData}
-      checked={['0-0']}
+      checkedKeys={['0-0']}
       defaultExpandAll
     />
   );

@@ -3,8 +3,8 @@ import { TreeProps as ATreeProps } from 'antd';
 import { ArrTransformFormat } from 'jsonlee-utils/dist/types/arr';
 import { Key } from 'react';
 
-export interface TreeProps<T = AnyObject> extends ATreeProps<T> {
-  checked?: Key[];
+export interface TreeProps<T = AnyObject> extends Omit<ATreeProps<T>, 'checkedKeys'> {
+  checkedKeys?: Key[];
   optionsFormat?: ArrTransformFormat<T>;
   onCheckedAllChange?: (checked: boolean) => void;
 }
